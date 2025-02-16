@@ -1,0 +1,43 @@
+body {
+    font-family: 'Arial', sans-serif;
+    background: url('img.webp');
+    background-size: cover;
+    color: #333;
+    text-align: center;
+}
+
+.container {
+    background: rgba(255, 255, 255, 0.9);
+    padding: 30px;
+    border-radius: 10px;
+    margin: 50px auto;
+    width: 400px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+h1 {
+    color: #007BFF;
+}
+
+input, select, button {
+    margin: 10px 0;
+    padding: 10px;
+    width: 100%;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+button {
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+#output {
+    margin-top: 20px;
+    font-size: 1.2em;
+    background: #f0f8ff;
+    padding: 15px;
+    border-radius: 8px;
+}
