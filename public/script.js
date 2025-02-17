@@ -1,4 +1,4 @@
-document.getElementById('bpForm').addEventListener('submit', function(e) {
+document.getElementById('bpForm').addEventListener('submit', function (e) {
     e.preventDefault();
 
     const formData = new FormData(this);
@@ -12,8 +12,49 @@ document.getElementById('bpForm').addEventListener('submit', function(e) {
     })
     .then(response => response.json())
     .then(result => {
-        document.getElementById('output').innerHTML = `<strong>AI Advice:</strong><br>${result.advice}`;
-        // Optionally fetch historical data and plot charts here
+        document.getElementById('output').innerHTML = `<strong>AI Diagnosis:</strong><br>${result.advice}`;
+        document.getElementById('output').classList.remove('hidden');
+
+        // Show BP history button if previous data exists
+        if (result.previousData.length > 0) {
+            document.getElementById('showHistoryBtn').classList.remove('hidden');
+        }
+
+        // Store previous data for graph
+        localStorage.setItem('bpHistory', JSON.stringify(result.previousData.concat([{
+            systolic: data.systolic,
+            diastolic: data.diastolic,
+            recorded_at: new Date().toISOString()
+        }])));
     })
     .catch(error => console.error('Error:', error));
 });
+
+// Show BP History Chart on Button Click
+document.getElementById('showHistoryBtn').addEventListener('click', function () {
+    const bpHistory = JSON.parse(localStorage.getItem('bpHistory')) || [];
+    if (bpHistory.length > 0) {
+        document.getElementById('bpHistory').classList.remove('hidden');
+        renderBPChart(bpHistory);
+    }
+});
+
+// Function to Render BP Chart
+function renderBPChart(bpHistory) {
+    const ctx = document.getElementById('bpChart').getContext('2d');
+    const labels = bpHistory.map(record => new Date(record.recorded_at).toLocaleDateString());
+    const systolicData = bpHistory.map(record => record.systolic);
+    const diastolicData = bpHistory.map(record => record.diastolic);
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                { label: 'Systolic Pressure', data: systolicData, borderColor: 'red', fill: false },
+                { label: 'Diastolic Pressure', data: diastolicData, borderColor: 'blue', fill: false }
+            ]
+        },
+        options: { responsive: true }
+    });
+}
