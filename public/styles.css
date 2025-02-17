@@ -1,6 +1,6 @@
 body {
     font-family: 'Arial', sans-serif;
-    background: url('img.webp');
+    background: url('im.webp');
     background-size: cover;
     color: #333;
     text-align: center;
@@ -11,7 +11,7 @@ body {
     padding: 30px;
     border-radius: 10px;
     margin: 50px auto;
-    width: 400px;
+    width: 500px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
