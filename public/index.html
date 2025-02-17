@@ -1,34 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Blood Pressure Advisor</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
     <div class="container">
-        <h1>Check Your Blood Pressure</h1>
+        <h1>AI Blood Pressure Advisor</h1>
+        <p>Track your blood pressure over time and get AI-powered health insights.</p>
+
+        <!-- User Input Form -->
         <form id="bpForm">
-            <input type="text" name="name" placeholder="Name" required>
-            <input type="number" name="systolic" placeholder="Systolic Pressure (mmHg)" required>
-            <input type="number" name="diastolic" placeholder="Diastolic Pressure (mmHg)" required>
+            <input type="text" name="name" placeholder="Full Name" required>
             <input type="number" name="age" placeholder="Age" required>
             <select name="gender" required>
                 <option value="" disabled selected>Select Gender</option>
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
+                <option value="Other">Other</option>
             </select>
             <input type="text" name="language" placeholder="Preferred Language" required>
             <input type="text" name="problem" placeholder="Existing Problems or Diseases">
-            <button type="submit">Process</button>
+
+            <hr>
+
+            <input type="number" name="systolic" placeholder="Systolic Pressure (mmHg)" required>
+            <input type="number" name="diastolic" placeholder="Diastolic Pressure (mmHg)" required>
+
+            <button type="submit">Check BP</button>
         </form>
 
-        <div id="output"></div>
+        <!-- AI Diagnosis Output -->
+        <div id="output" class="hidden"></div>
 
-        <canvas id="bpChart"></canvas>
+        <!-- Show BP History Button (Hidden Initially) -->
+        <button id="showHistoryBtn" class="hidden">Show BP History</button>
+
+        <!-- BP History Section (Hidden Initially) -->
+        <div id="bpHistory" class="hidden">
+            <h2>Your BP History</h2>
+            <canvas id="bpChart"></canvas>
+        </div>
     </div>
 
     <script src="script.js"></script>
+    <script>app.get('/', (req, res) => {
+            res.sendFile(__dirname + '/index.html'); // Serve the HTML file
+        });
+    </script>
 </body>
+
 </html>
