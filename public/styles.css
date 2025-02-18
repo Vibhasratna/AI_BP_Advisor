@@ -47,6 +47,15 @@ select {
     background: white;
 }
 
+/* User ID and Button */
+#generateId {
+    margin-top: 15px;
+}
+
+#generateId.hidden {
+    display: none;
+}
+
 /* Submit Button */
 button {
     background-color: #007BFF;
@@ -103,10 +112,13 @@ canvas {
         transform: translateY(0);
     }
 }
+
+/* Hide elements */
 .hidden {
-    display: none;
+    display: none !important;
 }
 
+/* Show History Button */
 #showHistoryBtn {
     background-color: #28a745;
     color: white;
@@ -122,4 +134,56 @@ canvas {
 
 #showHistoryBtn:hover {
     background-color: #218838;
+}
+
+/* Email Report Section */
+#emailSection {
+    margin-top: 20px;
+}
+
+#emailSection input {
+    width: calc(100% - 20px);
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+#sendEmail {
+    width: 100%;
+    background-color: #ffc107;
+    color: white;
+    padding: 10px;
+    font-size: 1rem;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background 0.3s ease-in-out;
+}
+
+#sendEmail:hover {
+    background-color: #e0a800;
+}
+
+/* ID Fields & Auto-fill Section */
+#existingUser {
+    margin-bottom: 15px;
+}
+
+/* Adjust Inputs for Larger Screens */
+@media (min-width: 768px) {
+    input[type="text"], input[type="number"], select {
+        display: inline-block;
+        width: 48%;
+        margin-right: 4%;
+    }
+
+    input[type="text"]:last-child, input[type="number"]:last-child {
+        margin-right: 0;
+    }
+}
+
+/* Adjust button layout for mobile */
+@media (max-width: 768px) {
+    input[type="text"], input[type="number"], select {
+        width: 100%;
+    }
 }
