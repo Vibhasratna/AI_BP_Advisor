@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,51 +7,66 @@
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-
 <body>
     <div class="container">
-        <h1>AI Blood Pressure Advisor</h1>
+        <h1>🩺 AI Blood Pressure Advisor</h1>
         <p>Track your blood pressure over time and get AI-powered health insights.</p>
 
-        <!-- User Input Form -->
+        <!-- 🔹 User Input Form -->
         <form id="bpForm">
-            <input type="text" name="name" placeholder="Full Name" required>
-            <input type="number" name="age" placeholder="Age" required>
-            <select name="gender" required>
+            <label>
+                <input type="checkbox" id="existingUser"> Already a user?
+            </label>
+
+            <!-- 🔹 User ID Input (Only for existing users) -->
+            <div id="userIdSection">
+                <label for="userId">Enter User ID:</label>
+                <input type="text" id="userId" name="userId" placeholder="Your User ID">
+            </div>
+
+            <!-- 🔹 User Information Fields -->
+            <input type="text" id="name" name="name" placeholder="Full Name" required>
+            <input type="number" id="age" name="age" placeholder="Age" required>
+            
+            <select id="gender" name="gender" required>
                 <option value="" disabled selected>Select Gender</option>
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
                 <option value="Other">Other</option>
             </select>
-            <input type="text" name="language" placeholder="Preferred Language" required>
-            <input type="text" name="problem" placeholder="Existing Problems or Diseases">
+
+            <input type="text" id="language" name="language" placeholder="Preferred Language" required>
+            <input type="text" id="problem" name="problem" placeholder="Existing Problems or Diseases">
 
             <hr>
 
-            <input type="number" name="systolic" placeholder="Systolic Pressure (mmHg)" required>
-            <input type="number" name="diastolic" placeholder="Diastolic Pressure (mmHg)" required>
+            <!-- 🔹 Blood Pressure Inputs -->
+            <input type="number" id="systolic" name="systolic" placeholder="Systolic Pressure (mmHg)" required>
+            <input type="number" id="diastolic" name="diastolic" placeholder="Diastolic Pressure (mmHg)" required>
 
-            <button type="submit">Check BP</button>
+            <button type="submit">🔍 Check BP</button>
         </form>
 
-        <!-- AI Diagnosis Output -->
+        <!-- 🔹 AI Diagnosis Output -->
         <div id="output" class="hidden"></div>
 
-        <!-- Show BP History Button (Hidden Initially) -->
-        <button id="showHistoryBtn" class="hidden">Show BP History</button>
+        <!-- 🔹 Show BP History Button -->
+        <button id="showHistoryBtn" class="hidden">📈 Show BP History</button>
 
-        <!-- BP History Section (Hidden Initially) -->
+        <!-- 🔹 BP History Chart -->
         <div id="bpHistory" class="hidden">
             <h2>Your BP History</h2>
             <canvas id="bpChart"></canvas>
         </div>
+
+        <!-- 🔹 Email input for sending diagnosis report -->
+        <div id="emailSection" class="hidden">
+            <input type="email" id="email" name="email" placeholder="Enter Email to receive report">
+            <button id="sendEmail">📧 Send Report</button>
+        </div>
     </div>
 
+    <!-- Include JavaScript -->
     <script src="script.js"></script>
-    <script>app.get('/', (req, res) => {
-            res.sendFile(__dirname + '/index.html'); // Serve the HTML file
-        });
-    </script>
 </body>
-
 </html>
