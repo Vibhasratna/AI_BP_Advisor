@@ -46,7 +46,7 @@ AI Integration
 
 
 📂 Project Structure:-
-
+```
 
 📦 AI_BP_Advisor
 │── 📁 public             # Frontend assets (CSS, JS, images,HTML)
@@ -56,7 +56,7 @@ AI Integration
 │── 📄 package.json       # Dependencies and project metadata
 │── 📄 .env               # Environment variables
 │── 📄 README.md          # Project documentation
-
+```
 
 📦 Installation & Setup:-
 
