@@ -1,8 +1,5 @@
----
-
-# **🩺 AI Blood Pressure Advisor**  
+🩺 AI Blood Pressure Advisor**  
 **AI_BP_Advisor** is an intelligent health tracking system that helps users monitor their blood pressure over time and receive AI-powered health insights. The system enables users to track trends, compare historical data, and receive AI-generated recommendations for better cardiovascular health.  
----
 
 ## **📌 Features**  
 ### **🔹 User Management**  
