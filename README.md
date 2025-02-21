@@ -1,5 +1,11 @@
-🩺 AI Blood Pressure Advisor**  
+---
+
+# **🩺 AI Blood Pressure Advisor**  
 **AI_BP_Advisor** is an intelligent health tracking system that helps users monitor their blood pressure over time and receive AI-powered health insights. The system enables users to track trends, compare historical data, and receive AI-generated recommendations for better cardiovascular health.  
+
+
+
+---
 
 ## **📌 Features**  
 ### **🔹 User Management**  
@@ -43,10 +49,29 @@
 
 ---
 
+## **📦 Dependencies**  
+The project uses the following **Node.js packages**:  
+| Dependency       | Description |
+|-----------------|---------------|
+| `express`       | Web framework for Node.js |
+| `mysql2`        | MySQL database driver |
+| `dotenv`        | Loads environment variables from a `.env` file |
+| `openai`        | OpenAI API client |
+| `nodemailer`    | SMTP-based email sending |
+| `cors`          | Enables CORS for API access |
+
+
+📌 **To install all dependencies**:  
+```sh
+npm install
+```
+
+---
+
 ## **📂 Folder Structure**  
 ```
 AI_BP_Advisor/
-│-- public/                 # Frontend assets (HTML, CSS, JavaScript)
+│-- public/                 # Frontend assets (HTML, CSS, JavaScript and image)
 │-- .gitignore              # Ignores sensitive files (.env)
 │-- .env                    # Environment variables (NOT tracked in Git)
 │-- server.js               # Main backend server file
@@ -59,15 +84,10 @@ AI_BP_Advisor/
 ## **🚀 Installation & Setup**  
 ### **🔹 Prerequisites**  
 Before running the project, ensure you have the following installed:  
-- **Node.js** (v14 or later)  
+- **Node.js**  
 - **MySQL Database**  
 - **Git**  
 
-### **🔹 Clone the Repository**  
-```sh
-git clone https://github.com/Vibhasratna/AI_BP_Advisor.git
-cd AI_BP_Advisor
-```
 
 ### **🔹 Install Dependencies**  
 ```sh
@@ -78,13 +98,13 @@ npm install
 Create a `.env` file in the root directory and add:  
 ```sh
 PORT=3000
-DB_HOST=your_database_host
-DB_USER=your_database_user
-DB_PASSWORD=your_database_password
-DB_NAME=your_database_name
-OPENAI_API_KEY=your_openai_api_key
-SMTP_EMAIL=your_smtp_email
-SMTP_PASSWORD=your_smtp_password
+DB_HOST=database_host
+DB_USER=database_user
+DB_PASSWORD=database_password
+DB_NAME=database_name
+OPENAI_API_KEY=openai_api_key
+SMTP_EMAIL=smtp_email
+SMTP_PASSWORD=smtp_password
 ```
 **Note:** `.env` is already added to `.gitignore` to prevent leaks.  
 
@@ -144,3 +164,26 @@ Server will run on **`http://localhost:3000`**
 
 ---
 
+## **🤝 Contributing**  
+Contributions are welcome! Follow these steps to contribute:  
+1. **Fork the repository**  
+2. **Create a new branch** (`feature-branch`)  
+3. **Commit your changes** (`git commit -m "Added feature X"`)  
+4. **Push to your branch** (`git push origin feature-branch`)  
+5. **Submit a Pull Request (PR)**  
+
+---
+
+## **📜 License**  
+This project is licensed under the **MIT License**.  
+
+---
+
+## **📞 Contact**  
+👤 **Vibhas Ratna**  
+📧 Email: [YourEmail@example.com]  
+🔗 GitHub: [Vibhasratna](https://github.com/Vibhasratna)  
+
+---
+
+This README now includes a **dependencies section** with package details and installation instructions. Let me know if you need any modifications! 🚀😊
