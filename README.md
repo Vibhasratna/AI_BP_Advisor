@@ -47,10 +47,6 @@
 ```
 AI_BP_Advisor/
 │-- public/                 # Frontend assets (HTML, CSS, JavaScript)
-│-- views/                  # EJS templates for rendering pages
-│-- routes/                 # API routes (User, BP data, AI integration)
-│-- models/                 # Database models and schemas
-│-- config/                 # Database and API configurations
 │-- .gitignore              # Ignores sensitive files (.env)
 │-- .env                    # Environment variables (NOT tracked in Git)
 │-- server.js               # Main backend server file
