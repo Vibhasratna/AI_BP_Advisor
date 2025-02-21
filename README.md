@@ -157,5 +157,3 @@ Server will run on **`http://localhost:3000`**
 - 📊 **More Advanced AI Analysis** using ML models.  
 - 📅 **Medication & Lifestyle Recommendations** based on BP trends.  
 - 📱 **Mobile App Integration** for a better user experience.  
-
----
