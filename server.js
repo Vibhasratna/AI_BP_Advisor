@@ -10,7 +10,7 @@ const port = 3000;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public')); // Serve static files
+app.use(express.static('public'));
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
@@ -23,7 +23,7 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-// 📌 **MySQL Database Connection**
+// 📌 **Database Connection**
 const db = mysql.createConnection({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -39,16 +39,13 @@ db.connect(err => {
     console.log('✅ Connected to MySQL Database');
 });
 
-// 📌 **Create Tables (Ensure correct schema)**
+// 📌 **Ensure Tables Exist**
 db.query(
     `CREATE TABLE IF NOT EXISTS users (
         id INT PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
         age INT NOT NULL,
-        gender ENUM('Male', 'Female', 'Other') NOT NULL,
-        language VARCHAR(50) NOT NULL,
-        problem TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        gender ENUM('Male', 'Female', 'Other') NOT NULL
     )`, (err) => {
     if (err) console.error('❌ Error creating users table:', err);
 });
@@ -65,127 +62,126 @@ db.query(
     if (err) console.error('❌ Error creating bp_records table:', err);
 });
 
-// 📌 **User Registration API**
+// 📌 **Register New User**
 app.post('/register', async (req, res) => {
-    const { userId, name, age, gender, language, problem } = req.body;
+    const { userId, name, age, gender, systolic, diastolic } = req.body;
 
-    if (!userId || !name || !age || !gender || !language) {
+    if (!userId || !name || !age || !gender || !systolic || !diastolic) {
         return res.status(400).json({ error: "⚠️ All fields are required." });
-    }
-
-    if (isNaN(userId) || userId < 1000) {
-        return res.status(400).json({ error: "⚠️ Invalid User ID. Please enter a valid number (1000+)." });
     }
 
     try {
         const [existingUser] = await db.promise().query('SELECT id FROM users WHERE id = ?', [userId]);
 
         if (existingUser.length > 0) {
-            return res.status(400).json({ error: "⚠️ User ID already exists! Try a different ID." });
+            return res.status(400).json({ error: "⚠️ User ID already exists! Use a different ID." });
         }
 
-        await db.promise().query('INSERT INTO users (id, name, age, gender, language, problem) VALUES (?, ?, ?, ?, ?, ?)', 
-            [userId, name, age, gender, language, problem || null]);
+        await db.promise().query('INSERT INTO users (id, name, age, gender) VALUES (?, ?, ?, ?)', 
+            [userId, name, age, gender]);
 
-        res.status(201).json({ message: "✅ User registered successfully!", userId });
+        // Store BP Record
+        await db.promise().query(
+            'INSERT INTO bp_records (user_id, systolic, diastolic) VALUES (?, ?, ?)',
+            [userId, systolic, diastolic]
+        );
+
+        // Fetch updated BP history
+        const [history] = await db.promise().query(
+            'SELECT systolic, diastolic, recorded_at FROM bp_records WHERE user_id = ? ORDER BY recorded_at ASC',
+            [userId]
+        );
+
+        // AI Analysis
+        const aiAdvice = await generateAIAdvice(userId, systolic, diastolic);
+
+        res.status(201).json({ message: "✅ User registered & BP analyzed!", advice: aiAdvice, history });
     } catch (error) {
         console.error("❌ Database Error:", error);
         res.status(500).json({ error: "⚠️ Internal Server Error" });
     }
 });
 
-// 📌 **User Login API**
+// 📌 **Login & Fetch User Details**
 app.post('/login', async (req, res) => {
     const { userId } = req.body;
-    console.log("🔹 Received User ID:", userId); // Debugging log
 
     if (!userId) {
-        console.log("⚠️ No User ID provided!");
         return res.status(400).json({ error: "⚠️ User ID is required." });
     }
 
     try {
-        // Fetch user details
-        const [user] = await db.promise().query(
-            'SELECT name, gender FROM users WHERE id = ? LIMIT 1', 
-            [userId]
-        );
+        const [user] = await db.promise().query('SELECT name, gender, age FROM users WHERE id = ?', [userId]);
 
-        console.log("🔍 Database Query Result:", user); // Debugging log
-
-        if (!user || user.length === 0) {
-            console.log("⚠️ User ID not found!");
-            return res.status(404).json({ error: "⚠️ User ID not found. Please register first." });
+        if (user.length === 0) {
+            return res.status(404).json({ error: "⚠️ User not found. Please register first." });
         }
 
-        console.log("✅ User Found:", user[0]); // Log the user data
-        return res.status(200).json({ message: "✅ User found", user: user[0] });
-
+        res.status(200).json({ message: "✅ User found", user: user[0] });
     } catch (error) {
-        console.error("❌ Database Error:", error); // Log full error details
-        return res.status(500).json({ error: "⚠️ Internal Server Error" });
+        console.error("❌ Database Error:", error);
+        res.status(500).json({ error: "⚠️ Internal Server Error" });
     }
 });
 
-
-
-// 📌 **BP Check API (For Existing Users)**
+// 📌 **Check BP for Existing Users**
 app.post('/api/check-bp', async (req, res) => {
     const { userId, systolic, diastolic } = req.body;
-
-    console.log("Received BP Check Request:", req.body); // Debugging
 
     if (!userId || !systolic || !diastolic) {
         return res.status(400).json({ error: "⚠️ All fields are required." });
     }
 
     try {
-        // ✅ **Check if user exists**
         const [user] = await db.promise().query('SELECT * FROM users WHERE id = ?', [userId]);
 
         if (user.length === 0) {
             return res.status(404).json({ error: "⚠️ User ID not found. Please register first." });
         }
 
-        // ✅ **Fetch BP history**
-        const [history] = await db.promise().query(
-            'SELECT systolic, diastolic, recorded_at FROM bp_records WHERE user_id = ? ORDER BY recorded_at ASC', 
-            [userId]
-        );
-
-        // ✅ **AI Message Generation with Error Handling**
-        let message = `User ID: ${userId}, BP: ${systolic}/${diastolic}. History: ${JSON.stringify(history)}.`;
-        message += " Analyze if they are fit, if they need a doctor, suggest foods, fruits, and home remedies.";
-
-        let aiAdvice = "⚠️ AI diagnosis not available at the moment.";
-
-        try {
-            const aiResponse = await openai.chat.completions.create({
-                model: 'gpt-3.5-turbo',
-                messages: [{ role: 'user', content: message }],
-            });
-
-            aiAdvice = aiResponse.choices[0]?.message?.content || aiAdvice;
-        } catch (error) {
-            console.error("❌ OpenAI API Error:", error);
-        }
-
-        // ✅ **Insert BP record only if AI response is successful**
+        // Save new BP record
         await db.promise().query(
-            'INSERT INTO bp_records (user_id, systolic, diastolic) VALUES (?, ?, ?)', 
+            'INSERT INTO bp_records (user_id, systolic, diastolic) VALUES (?, ?, ?)',
             [userId, systolic, diastolic]
         );
 
-        res.json({ advice: aiAdvice, history, userId });
+        // Fetch **all** historical BP records for the user
+        const [history] = await db.promise().query(
+            'SELECT systolic, diastolic, recorded_at FROM bp_records WHERE user_id = ? ORDER BY recorded_at ASC',
+            [userId]
+        );
 
+        const aiAdvice = await generateAIAdvice(userId, systolic, diastolic);
+
+        res.json({ advice: aiAdvice, history, userId });
     } catch (error) {
         console.error("❌ Server Error:", error);
         res.status(500).json({ error: "⚠️ Internal Server Error" });
     }
 });
 
-// 📌 **Send BP Report via Email**
+// 📌 **Generate AI BP Analysis**
+async function generateAIAdvice(userId, systolic, diastolic) {
+    let aiAdvice = "⚠️ AI diagnosis not available.";
 
+    try {
+        const aiResponse = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [{
+                role: 'user',
+                content: `User ID: ${userId}, BP: ${systolic}/${diastolic}. Analyze if they need medical attention and suggest lifestyle improvements.`
+            }],
+        });
+
+        aiAdvice = aiResponse.choices[0]?.message?.content || aiAdvice;
+    } catch (error) {
+        console.error("❌ OpenAI API Error:", error.message);
+    }
+
+    return aiAdvice;
+}
+
+// 📌 **Send BP Report via Email**
 app.post('/api/send-report', async (req, res) => {
     const { email, history, advice } = req.body;
 
@@ -194,7 +190,7 @@ app.post('/api/send-report', async (req, res) => {
     }
 
     let historyText = history.map(entry =>
-        `📅 Date: ${new Date(entry.recorded_at).toLocaleDateString()}, BP: ${entry.systolic}/${entry.diastolic}`
+        `📅 ${new Date(entry.recorded_at).toLocaleDateString()} - BP: ${entry.systolic}/${entry.diastolic}`
     ).join('\n');
 
     const mailOptions = {
@@ -212,7 +208,6 @@ app.post('/api/send-report', async (req, res) => {
         res.status(500).json({ error: "⚠️ Failed to send email" });
     }
 });
-
 
 // 📌 **Start Express Server**
 app.listen(port, () => {

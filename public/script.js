@@ -6,15 +6,12 @@ document.getElementById('existingUser').addEventListener('change', function () {
     const ageInput = document.getElementById('age');
     const genderInput = document.getElementById('gender');
 
-    // 🔹 Show/hide 'Generate ID' button
     document.getElementById('generateId').classList.toggle('hidden', isExistingUser);
 
-    // 🔹 Disable fields if it's an existing user
     nameInput.disabled = isExistingUser;
     genderInput.disabled = isExistingUser;
     ageInput.disabled = isExistingUser;
 
-    // 🔹 If unchecked, clear fields and enable them
     if (!isExistingUser) {
         nameInput.value = "";
         genderInput.value = "";
@@ -22,7 +19,6 @@ document.getElementById('existingUser').addEventListener('change', function () {
         return;
     }
 
-    // 🔹 Ensure User ID is entered and valid
     const userId = userIdInput.value.trim();
     if (!userId || !/^\d+$/.test(userId)) {
         alert('⚠️ User ID must be a valid number.');
@@ -33,7 +29,6 @@ document.getElementById('existingUser').addEventListener('change', function () {
         return;
     }
 
-    // 🔹 Fetch user details
     fetch(`http://localhost:3000/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -66,10 +61,9 @@ document.getElementById('existingUser').addEventListener('change', function () {
     });
 });
 
-
 // 🔹 **BP Data Submission**
 document.getElementById('bpForm').addEventListener('submit', function (e) {
-    e.preventDefault(); // Prevent form reload
+    e.preventDefault();
 
     const formData = new FormData(this);
     const data = {};
@@ -80,13 +74,11 @@ document.getElementById('bpForm').addEventListener('submit', function (e) {
     const systolic = parseInt(data.systolic, 10);
     const diastolic = parseInt(data.diastolic, 10);
 
-    // 🔹 Validate User ID format (only numbers)
     if (isExistingUser && (!userId || !/^\d+$/.test(userId))) {
         alert('⚠️ User ID must be a valid number.');
         return;
     }
 
-    // 🔹 Validate BP values before submission
     if (systolic <= 0 || diastolic <= 0) {
         alert('⚠️ Please enter valid BP values.');
         return;
@@ -116,7 +108,7 @@ document.getElementById('bpForm').addEventListener('submit', function (e) {
             localStorage.setItem('bpHistory', JSON.stringify(result.history));
             localStorage.setItem('aiAdvice', result.advice);
 
-            renderBPChart(result.history);
+            renderBPChart(result.history); // ✅ Use all historical data
         } else {
             document.getElementById('bpHistory').classList.add('hidden');
         }
@@ -144,7 +136,6 @@ document.getElementById('sendEmail').addEventListener('click', function () {
         return;
     }
 
-    // 🔹 Validate email format
     if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
         alert('⚠️ Please enter a valid email address.');
         return;
@@ -164,7 +155,6 @@ document.getElementById('sendEmail').addEventListener('click', function () {
 function renderBPChart(bpHistory) {
     const ctx = document.getElementById('bpChart').getContext('2d');
 
-    // 🔹 Destroy previous chart instance if it exists
     if (window.bpChartInstance) {
         window.bpChartInstance.destroy();
     }
@@ -174,14 +164,33 @@ function renderBPChart(bpHistory) {
     const diastolicData = bpHistory.map(record => record.diastolic);
 
     window.bpChartInstance = new Chart(ctx, {
-        type: 'line',
+        type: 'line', // ✅ Use a line chart for time-series data
         data: {
             labels: labels,
             datasets: [
-                { label: 'Systolic Pressure', data: systolicData, borderColor: 'red', fill: false },
-                { label: 'Diastolic Pressure', data: diastolicData, borderColor: 'blue', fill: false }
+                {
+                    label: 'Systolic Pressure',
+                    data: systolicData,
+                    borderColor: 'red',
+                    fill: false,
+                    tension: 0.4 // ✅ Adds a slight curve for better visualization
+                },
+                {
+                    label: 'Diastolic Pressure',
+                    data: diastolicData,
+                    borderColor: 'blue',
+                    fill: false,
+                    tension: 0.4
+                }
             ]
         },
-        options: { responsive: true }
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: { title: { display: true, text: 'Date' } },
+                y: { title: { display: true, text: 'BP (mmHg)' } }
+            }
+        }
     });
 }
