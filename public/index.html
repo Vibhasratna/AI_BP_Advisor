@@ -19,14 +19,14 @@
             </label>
 
             <!-- 🔹 User ID Input (Only for existing users) -->
-            <div id="userIdSection">
+            <div id="userIdSection" class="hidden">
                 <label for="userId">Enter User ID:</label>
                 <input type="text" id="userId" name="userId" placeholder="Your User ID">
             </div>
 
             <!-- 🔹 User Information Fields -->
             <input type="text" id="name" name="name" placeholder="Full Name" required>
-            <input type="number" id="age" name="age" placeholder="Age" required>
+            <input type="number" id="age" name="age" placeholder="Age" required min="1" max="120">
             
             <select id="gender" name="gender" required>
                 <option value="" disabled selected>Select Gender</option>
@@ -36,33 +36,41 @@
             </select>
 
             <input type="text" id="language" name="language" placeholder="Preferred Language" required>
-            <input type="text" id="problem" name="problem" placeholder="Existing Problems or Diseases">
+            <textarea id="problem" name="problem" placeholder="Existing Problems or Diseases (Optional)"></textarea>
 
             <hr>
 
             <!-- 🔹 Blood Pressure Inputs -->
-            <input type="number" id="systolic" name="systolic" placeholder="Systolic Pressure (mmHg)" required>
-            <input type="number" id="diastolic" name="diastolic" placeholder="Diastolic Pressure (mmHg)" required>
+            <div class="bp-inputs">
+                <input type="number" id="systolic" name="systolic" placeholder="Systolic Pressure (mmHg)" required min="60" max="250">
+                <input type="number" id="diastolic" name="diastolic" placeholder="Diastolic Pressure (mmHg)" required min="40" max="150">
+            </div>
 
-            <button type="submit">🔍 Check BP</button>
+            <button type="submit">🔍 Analyze Blood Pressure</button>
         </form>
 
         <!-- 🔹 AI Diagnosis Output -->
-        <div id="output" class="hidden"></div>
+        <div id="output" class="hidden">
+            <h2>AI Analysis Results</h2>
+            <div class="diagnosis-content"></div>
+        </div>
 
         <!-- 🔹 Show BP History Button -->
         <button id="showHistoryBtn" class="hidden">📈 Show BP History</button>
 
         <!-- 🔹 BP History Chart -->
         <div id="bpHistory" class="hidden">
-            <h2>Your BP History</h2>
+            <h2>Your Blood Pressure History</h2>
             <canvas id="bpChart"></canvas>
         </div>
 
-        <!-- 🔹 Email input for sending diagnosis report -->
+        <!-- 🔹 Email Report Section -->
         <div id="emailSection" class="hidden">
-            <input type="email" id="email" name="email" placeholder="Enter Email to receive report">
-            <button id="sendEmail">📧 Send Report</button>
+            <h3>Get Your Report via Email</h3>
+            <div class="email-input-group">
+                <input type="email" id="email" name="email" placeholder="Enter your email address" required>
+                <button id="sendEmail">📧 Send Report</button>
+            </div>
         </div>
     </div>
 

@@ -6,7 +6,7 @@ const OpenAI = require('openai');
 const nodemailer = require('nodemailer');
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
@@ -45,7 +45,9 @@ db.query(
         id INT PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
         age INT NOT NULL,
-        gender ENUM('Male', 'Female', 'Other') NOT NULL
+        gender ENUM('Male', 'Female', 'Other') NOT NULL,
+        language VARCHAR(50) NOT NULL,
+        problem TEXT
     )`, (err) => {
     if (err) console.error('❌ Error creating users table:', err);
 });
@@ -64,9 +66,9 @@ db.query(
 
 // 📌 **Register New User**
 app.post('/register', async (req, res) => {
-    const { userId, name, age, gender, systolic, diastolic } = req.body;
+    const { userId, name, age, gender, language, systolic, diastolic, problem } = req.body;
 
-    if (!userId || !name || !age || !gender || !systolic || !diastolic) {
+    if (!userId || !name || !age || !gender || !language || !systolic || !diastolic) {
         return res.status(400).json({ error: "⚠️ All fields are required." });
     }
 
@@ -77,8 +79,8 @@ app.post('/register', async (req, res) => {
             return res.status(400).json({ error: "⚠️ User ID already exists! Use a different ID." });
         }
 
-        await db.promise().query('INSERT INTO users (id, name, age, gender) VALUES (?, ?, ?, ?)', 
-            [userId, name, age, gender]);
+        await db.promise().query('INSERT INTO users (id, name, age, gender, language, problem) VALUES (?, ?, ?, ?, ?, ?)', 
+            [userId, name, age, gender, language, problem || null]);
 
         // Store BP Record
         await db.promise().query(
@@ -102,22 +104,18 @@ app.post('/register', async (req, res) => {
     }
 });
 
-// 📌 **Login & Fetch User Details**
-app.post('/login', async (req, res) => {
-    const { userId } = req.body;
-
-    if (!userId) {
-        return res.status(400).json({ error: "⚠️ User ID is required." });
-    }
+// 📌 **Get User Details**
+app.get('/api/users/:userId', async (req, res) => {
+    const userId = req.params.userId;
 
     try {
-        const [user] = await db.promise().query('SELECT name, gender, age FROM users WHERE id = ?', [userId]);
+        const [user] = await db.promise().query('SELECT name, gender, age, language, problem FROM users WHERE id = ?', [userId]);
 
         if (user.length === 0) {
-            return res.status(404).json({ error: "⚠️ User not found. Please register first." });
+            return res.status(404).json({ error: "⚠️ User not found" });
         }
 
-        res.status(200).json({ message: "✅ User found", user: user[0] });
+        res.json(user[0]);
     } catch (error) {
         console.error("❌ Database Error:", error);
         res.status(500).json({ error: "⚠️ Internal Server Error" });
@@ -126,7 +124,7 @@ app.post('/login', async (req, res) => {
 
 // 📌 **Check BP for Existing Users**
 app.post('/api/check-bp', async (req, res) => {
-    const { userId, systolic, diastolic } = req.body;
+    const { userId, systolic, diastolic, problem } = req.body;
 
     if (!userId || !systolic || !diastolic) {
         return res.status(400).json({ error: "⚠️ All fields are required." });
@@ -137,6 +135,11 @@ app.post('/api/check-bp', async (req, res) => {
 
         if (user.length === 0) {
             return res.status(404).json({ error: "⚠️ User ID not found. Please register first." });
+        }
+
+        // Update user's problem if provided
+        if (problem !== undefined) {
+            await db.promise().query('UPDATE users SET problem = ? WHERE id = ?', [problem, userId]);
         }
 
         // Save new BP record
@@ -165,11 +168,14 @@ async function generateAIAdvice(userId, systolic, diastolic) {
     let aiAdvice = "⚠️ AI diagnosis not available.";
 
     try {
+        // Get user details for more accurate analysis
+        const [user] = await db.promise().query('SELECT age, gender, problem FROM users WHERE id = ?', [userId]);
+        
         const aiResponse = await openai.chat.completions.create({
-            model: 'gpt-4o-mini',
+            model: 'gpt-4',
             messages: [{
                 role: 'user',
-                content: `User ID: ${userId}, BP: ${systolic}/${diastolic}. Analyze if they need medical attention and suggest lifestyle improvements.`
+                content: `User ID: ${userId}, BP: ${systolic}/${diastolic}, age: ${user[0].age}, gender: ${user[0].gender}, existing problems: ${user[0].problem || 'none'}. Analyze if they need medical attention, is it high or low, what is the risk factor, what is the advice and suggest lifestyle improvements.`
             }],
         });
 

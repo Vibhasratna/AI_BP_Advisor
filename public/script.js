@@ -5,17 +5,20 @@ document.getElementById('existingUser').addEventListener('change', function () {
     const nameInput = document.getElementById('name');
     const ageInput = document.getElementById('age');
     const genderInput = document.getElementById('gender');
+    const languageInput = document.getElementById('language');
+    const problemInput = document.getElementById('problem');
 
-    document.getElementById('generateId').classList.toggle('hidden', isExistingUser);
+    document.getElementById('userIdSection').classList.toggle('hidden', !isExistingUser);
 
     nameInput.disabled = isExistingUser;
     genderInput.disabled = isExistingUser;
-    ageInput.disabled = isExistingUser;
 
     if (!isExistingUser) {
         nameInput.value = "";
         genderInput.value = "";
         ageInput.value = "";
+        languageInput.value = "";
+        problemInput.value = "";
         return;
     }
 
@@ -25,14 +28,12 @@ document.getElementById('existingUser').addEventListener('change', function () {
         this.checked = false;
         nameInput.disabled = false;
         genderInput.disabled = false;
-        ageInput.disabled = false;
         return;
     }
 
-    fetch(`http://localhost:3000/login`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId })
+    fetch(`/api/users/${userId}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
     })
     .then(response => response.json())
     .then(data => {
@@ -41,14 +42,14 @@ document.getElementById('existingUser').addEventListener('change', function () {
             this.checked = false;
             nameInput.disabled = false;
             genderInput.disabled = false;
-            ageInput.disabled = false;
         } else {
-            nameInput.value = data.user.name || "";
-            genderInput.value = data.user.gender || "";
-            ageInput.value = data.user.age || "";
+            nameInput.value = data.name || "";
+            genderInput.value = data.gender || "";
+            ageInput.value = data.age || "";
+            problemInput.value = data.problem || "";
+            languageInput.value = data.language || "";
             nameInput.disabled = true;
             genderInput.disabled = true;
-            ageInput.disabled = true;
         }
     })
     .catch(error => {
@@ -57,7 +58,6 @@ document.getElementById('existingUser').addEventListener('change', function () {
         this.checked = false;
         nameInput.disabled = false;
         genderInput.disabled = false;
-        ageInput.disabled = false;
     });
 });
 
@@ -65,14 +65,11 @@ document.getElementById('existingUser').addEventListener('change', function () {
 document.getElementById('bpForm').addEventListener('submit', function (e) {
     e.preventDefault();
 
-    const formData = new FormData(this);
-    const data = {};
-    formData.forEach((value, key) => data[key] = value);
-
     const isExistingUser = document.getElementById('existingUser').checked;
     const userId = document.getElementById('userId').value.trim();
-    const systolic = parseInt(data.systolic, 10);
-    const diastolic = parseInt(data.diastolic, 10);
+    const systolic = parseInt(document.getElementById('systolic').value, 10);
+    const diastolic = parseInt(document.getElementById('diastolic').value, 10);
+    const problem = document.getElementById('problem').value.trim();
 
     if (isExistingUser && (!userId || !/^\d+$/.test(userId))) {
         alert('⚠️ User ID must be a valid number.');
@@ -84,7 +81,22 @@ document.getElementById('bpForm').addEventListener('submit', function (e) {
         return;
     }
 
-    const apiUrl = isExistingUser ? 'http://localhost:3000/api/check-bp' : 'http://localhost:3000/register';
+    const data = isExistingUser ? {
+        userId,
+        systolic,
+        diastolic,
+        problem
+    } : {
+        name: document.getElementById('name').value,
+        age: document.getElementById('age').value,
+        gender: document.getElementById('gender').value,
+        language: document.getElementById('language').value,
+        problem,
+        systolic,
+        diastolic
+    };
+
+    const apiUrl = isExistingUser ? '/api/check-bp' : '/register';
 
     fetch(apiUrl, {
         method: 'POST',
@@ -108,7 +120,7 @@ document.getElementById('bpForm').addEventListener('submit', function (e) {
             localStorage.setItem('bpHistory', JSON.stringify(result.history));
             localStorage.setItem('aiAdvice', result.advice);
 
-            renderBPChart(result.history); // ✅ Use all historical data
+            renderBPChart(result.history);
         } else {
             document.getElementById('bpHistory').classList.add('hidden');
         }
@@ -141,7 +153,7 @@ document.getElementById('sendEmail').addEventListener('click', function () {
         return;
     }
 
-    fetch('http://localhost:3000/api/send-report', {
+    fetch('/api/send-report', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, history, advice })
@@ -164,7 +176,7 @@ function renderBPChart(bpHistory) {
     const diastolicData = bpHistory.map(record => record.diastolic);
 
     window.bpChartInstance = new Chart(ctx, {
-        type: 'line', // ✅ Use a line chart for time-series data
+        type: 'line',
         data: {
             labels: labels,
             datasets: [
@@ -173,7 +185,7 @@ function renderBPChart(bpHistory) {
                     data: systolicData,
                     borderColor: 'red',
                     fill: false,
-                    tension: 0.4 // ✅ Adds a slight curve for better visualization
+                    tension: 0.4
                 },
                 {
                     label: 'Diastolic Pressure',

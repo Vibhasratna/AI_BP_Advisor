@@ -33,7 +33,7 @@ h2 {
 }
 
 /* Form Styling */
-input, select, button {
+input, select, textarea, button {
     margin: 10px 0;
     padding: 10px;
     width: 100%;
@@ -47,13 +47,20 @@ select {
     background: white;
 }
 
-/* User ID and Button */
-#generateId {
-    margin-top: 15px;
+textarea {
+    min-height: 80px;
+    resize: vertical;
 }
 
-#generateId.hidden {
-    display: none;
+/* BP Input Section */
+.bp-inputs {
+    display: flex;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.bp-inputs input {
+    flex: 1;
 }
 
 /* Submit Button */
@@ -77,10 +84,9 @@ button:hover {
     background: #f0f8ff;
     padding: 15px;
     border-radius: 8px;
-    display: none; /* Initially hidden */
+    display: none;
 }
 
-/* Show AI output when data is available */
 #output.show {
     display: block;
     animation: fadeIn 0.5s ease-in-out;
@@ -98,6 +104,12 @@ canvas {
     .container {
         width: 95%;
         padding: 20px;
+        margin: 20px auto;
+    }
+    
+    .bp-inputs {
+        flex-direction: column;
+        gap: 5px;
     }
 }
 
@@ -139,18 +151,20 @@ canvas {
 /* Email Report Section */
 #emailSection {
     margin-top: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 5px;
 }
 
 #emailSection input {
-    width: calc(100% - 20px);
-    display: inline-block;
+    width: 100%;
     margin-bottom: 10px;
 }
 
 #sendEmail {
-    width: 100%;
     background-color: #ffc107;
-    color: white;
+    color: #212529;
+    width: 100%;
     padding: 10px;
     font-size: 1rem;
     border: none;
@@ -163,27 +177,26 @@ canvas {
     background-color: #e0a800;
 }
 
-/* ID Fields & Auto-fill Section */
-#existingUser {
-    margin-bottom: 15px;
+/* Checkbox Styling */
+input[type="checkbox"] {
+    width: auto;
+    margin-right: 5px;
 }
 
-/* Adjust Inputs for Larger Screens */
-@media (min-width: 768px) {
-    input[type="text"], input[type="number"], select {
-        display: inline-block;
-        width: 48%;
-        margin-right: 4%;
-    }
-
-    input[type="text"]:last-child, input[type="number"]:last-child {
-        margin-right: 0;
-    }
+/* User ID Section */
+#userIdSection {
+    margin: 15px 0;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 5px;
 }
 
-/* Adjust button layout for mobile */
-@media (max-width: 768px) {
-    input[type="text"], input[type="number"], select {
-        width: 100%;
-    }
+/* Diagnosis Content */
+.diagnosis-content {
+    text-align: left;
+    line-height: 1.6;
+    padding: 10px;
+    background: white;
+    border-radius: 5px;
+    margin-top: 10px;
 }
