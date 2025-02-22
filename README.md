@@ -1,119 +1,157 @@
-# AI Blood Pressure Advisor 🩺🤖  
+# **🩺 AI Blood Pressure Advisor** ❤️‍🩹  
+**AI_BP_Advisor** is an intelligent health tracking system 🧠 that helps users monitor their **blood pressure (BP)🩸** over time and receive **AI-powered** health insights. The system enables users to **track trends 📈, compare historical data 📊, and receive AI-generated recommendations 🤖** for better cardiovascular health.  
 
-📌 Project Overview:-
+---
 
-The AI Blood Pressure Advisor is a smart health monitoring system designed to track users' blood pressure (BP) over time and provide AI-powered health insights. 
-The system allows users to submit BP readings, analyze trends, and receive personalized medical guidance.  This project integrates OpenAI's API to generate health insights based
-on BP patterns and offers a user-friendly web interface with interactive graphs, historical BP tracking, and email reporting.  
+## **📌 Features ✨**  
+### **🔹 User Management 👤**  
+- 🆕 **New users** can **generate a unique 4-digit User ID 🔢** for future logins.  
+- 🔄 **Existing users** can enter their **User ID to retrieve previously stored information** (Name & Gender).  
+- ✅ **System validation** ensures User ID accuracy before storing or retrieving BP data.  
 
-🚀 Features & Functionality:-  
+### **🔹 Blood Pressure Tracking 🏥**  
+- Users can **input their Systolic and Diastolic BP readings** 🩸 along with the **date & time ⏳**.  
+- 🔍 The system **stores and retrieves past BP records** for historical analysis.  
 
-🔹 User Authentication & Profile Management
-- New Users: Generate a unique 4-digit User ID for future logins.  
-- Existing Users: Enter their User ID to retrieve their name, age, and gender automatically.  
-- Form Auto-Fill: Returning users have their details pre-filled to simplify data entry.  
+### **🔹 AI-Powered Health Insights 🤖**  
+- 🏥 **AI generates a diagnosis 🏥** based on **previous and current BP readings** for returning users.  
+- 🆕 **First-time users receive basic AI-driven health insights** without historical data.  
+- 📈 **Graphical representation of BP trends** for long-term users.  
 
-🔹 Blood Pressure Tracking 
-- Input BP Data: Users can enter their systolic and diastolic readings.  
-- Historical Data: Stores user BP history for future analysis.  
-- Graphical Representation: Displays BP trends using charts & visual analytics.  
+### **🔹 Email Report Generation 📧**  
+- 📩 Users can **receive their AI diagnosis via email**, including **BP history graphs 📊** (if applicable).  
 
-🔹 AI-Powered Health Insights
-- BP Analysis: AI compares current & previous readings to detect trends.  
-- Health Insights: Personalized AI-generated diagnosis for potential health concerns.  
-- Multi-Language Support(Planned Feature): AI-generated insights in multiple languages.  
+### **🔹 Secure Data Storage 🔒**  
+- 💾 All user data is **stored in a MySQL database**, ensuring data persistence.  
+- 🛡️ **Role-based access control** maintains data security and privacy.  
 
-🔹 Email Reporting
-- Receive BP Report via Email (including BP history & AI insights).  
-- Secure Email Integration using Nodemailer.  
+---
 
+## **🛠️ Tech Stack 💻**  
+### **🔷 Frontend 🎨**  
+- 🌐 **HTML**, 🎨 **CSS**, and 🖥️ **JavaScript** – **A responsive user interface** for BP tracking and insights.  
 
+### **🔷 Backend ⚙️**  
+- 🚀 **Node.js** and ⚡ **Express.js** – **Handles user authentication, data processing, and AI communication**.  
 
-🛠️ Technology Stack:-
+### **🔷 Database 🗄️**  
+- 🏛️ **MySQL** – **Stores user data, BP readings, and historical records**.  
 
-Frontend 
-- HTML, CSS, JavaScript – Client-side user interface.  
-- Bootstrap – Responsive and mobile-friendly UI components.  
+### **🔷 AI Integration 🧠**  
+- 🤖 **OpenAI API** – **Generates AI-powered health insights based on BP trends**.  
 
-Backend  
-- Node.js & Express.js – API development & server-side logic.  
-- MySQL – Database for user & BP record storage.  
-- Nodemailer – Email integration for sending reports.  
+### **🔷 Email Services 📩**  
+- 📧 **Nodemailer (SMTP)** – **Sends health reports via email**.  
 
-AI Integration 
-- OpenAI API – AI-driven insights based on BP trends.  
+---
 
+## **📦 Dependencies 🏗️**  
+The project uses the following **Node.js packages 📦**:  
+| 📌 Dependency  | 🔍 Description |
+|--------------|------------------|
+| `express`     | 🚀 Web framework for Node.js |
+| `mysql2`      | 🏛️ MySQL database driver |
+| `dotenv`      | 🔐 Loads environment variables from `.env` file |
+| `openai`      | 🤖 OpenAI API client |
+| `nodemailer`  | 📩 SMTP-based email sending |
+| `cors`        | 🔄 Enables CORS for API access |
 
-
-📂 Project Structure:-
-```
-
-📦 AI_BP_Advisor
-│── 📁 public             # Frontend assets (CSS, JS, images,HTML)
-│── 📁 node_models        # Database models (MySQL)
-│── 📄 server.js          # Main Express.js server file
-│── 📄 package.lock.json  # track the exact versions of dependencies installed in a project
-│── 📄 package.json       # Dependencies and project metadata
-│── 📄 .env               # Environment variables
-│── 📄 README.md          # Project documentation
-```
-
-📦 Installation & Setup:-
-
-
-2️⃣ Install Dependencies  
-npm install
-
-
-3️⃣ Configure Environment Variables 
-Create a `.env` file in the root directory and add:  
-
-```
-# OpenAI API Key
-OPENAI_API_KEY=your_openai_api_key
-
-# Database Configuration
-DB_HOST=localhost
-DB_USER=root
-DB_PASSWORD=yourpassword
-DB_NAME=bp_advisor
-
-# Email Configuration (Gmail SMTP)
-EMAIL_USER=your-email@gmail.com
-EMAIL_PASS=your-app-password
-```
-
-4️⃣ Start the Server 
+📌 **To install all dependencies 📦**:  
 ```sh
-npm start
+npm install
 ```
-The server will start at http://localhost:3000.  
 
+---
 
+## **📂 Folder Structure 🗂️**  
+```
+AI_BP_Advisor/
+│-- public/                 # 🎨 Frontend assets (HTML, CSS, JavaScript & images)
+│-- .gitignore              # 🚫 Ignores sensitive files (.env)
+│-- .env                    # 🔐 Environment variables (NOT tracked in Git)
+│-- server.js               # ⚙️ Main backend server file
+│-- package.json            # 📦 Node.js dependencies and scripts
+│-- README.md               # 📜 Project documentation
+```
 
-🔗 API Endpoints:-  
+---
 
-| Method | Endpoint       | Description |
-|--------|---------------|-------------|
-| `POST` | `/register`   | Registers a new user with generated ID. |
-| `POST` | `/login`      | Authenticates existing users. |
-| `POST` | `/submit-bp`  | Stores BP readings for a user. |
-| `GET`  | `/history/:id` | Retrieves BP history & AI insights. |
-| `POST` | `/send-report` | Sends BP reports via email. |
+## **🚀 Installation & Setup 🛠️**  
+### **🔹 Prerequisites 📝**  
+Before running the project, ensure you have the following installed:  
+✅ **Node.js**  
+✅ **MySQL Database**  
+✅ **Git**  
 
+### **🔹 Install Dependencies 🏗️**  
+```sh
+npm install
+```
 
+### **🔹 Setup Environment Variables 🔐**  
+Create a `.env` file in the root directory and add:  
+```sh
+PORT=3000
+DB_HOST=database_host
+DB_USER=database_user
+DB_PASSWORD=database_password
+DB_NAME=database_name
+OPENAI_API_KEY=openai_api_key
+SMTP_EMAIL=smtp_email
+SMTP_PASSWORD=smtp_password
+```
+📌 **Note:** `.env` is already added to `.gitignore` to prevent leaks 🔒.  
 
-📷 Screenshots:-
+### **🔹 Database Setup 🏛️**  
+Ensure MySQL is running and execute the following SQL to create the database and tables:  
+```sql
+CREATE DATABASE ai_bp_advisor;
+USE ai_bp_advisor;
 
-User Dashboard  
-![image](https://github.com/user-attachments/assets/f8414c21-6118-405a-92fe-2c94835a87e7)
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(4) UNIQUE NOT NULL,
+    name VARCHAR(100),
+    gender VARCHAR(10)
+);
 
-BP Trends & Graphs
-![BP Trends](https://via.placeholder.com/800x400)  
+CREATE TABLE bp_readings (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id VARCHAR(4),
+    systolic INT,
+    diastolic INT,
+    timestamp DATETIME,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+```
 
+### **🔹 Run the Server 🚀**  
+Start the backend server:  
+```sh
+node server.js
+```
+🌍 **Server will run on:** **`http://localhost:3000`**  
 
-🛠️ Future Enhancements  
-🔹 Multi-language AI insights (English, Hindi, Spanish, etc.).  
-🔹 Doctor Consultation API Integration (for advanced diagnosis).  
-🔹 BP Pattern Prediction using ML models.  
-🔹 Mobile App Support (Android/iOS).  
+---
+
+## **📝 API Endpoints 🌐**  
+### **🔹 User Endpoints 👤**  
+- `POST /register` → 🆕 Registers a **new user**.  
+- `POST /login` → 🔄 Logs in an **existing user** using **User ID**.  
+
+### **🔹 BP Data Endpoints 🩸**  
+- `POST /bp/add` → ➕ Adds a **new BP reading**.  
+- `GET /bp/history/:userId` → 🔍 Fetches **BP history** of a user.  
+
+### **🔹 AI Insights 🤖**  
+- `POST /ai/analyze` → 🧠 **Generates AI-based BP diagnosis**.  
+
+### **🔹 Email Service 📧**  
+- `POST /email/report` → 📩 **Sends AI diagnosis via email**.  
+
+---
+
+## **🎯 Future Enhancements 🔮**  
+🔹 **📊 More Advanced AI Analysis** using ML models.  
+🔹 **📅 Medication & Lifestyle Recommendations** based on BP trends.  
+🔹 **📱 Mobile App Integration** for a better user experience.  
