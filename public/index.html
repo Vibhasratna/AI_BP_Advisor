@@ -12,14 +12,16 @@
         <h1>🩺 AI Blood Pressure Advisor</h1>
         <p>Track your blood pressure over time and get AI-powered health insights.</p>
 
-    
+        <!-- Form for New and Existing Users -->
         <form id="bpForm">
+            <!-- Toggle for Existing Users -->
             <label class="checkbox-label">
                 <input type="checkbox" id="existingUser"> Already a user?
             </label>
 
-        
+            <!-- User ID Section -->
             <div id="userIdSection">
+                <!-- New User ID Section -->
                 <div id="newUserIdSection">
                     <label for="newUserId">Create your 4-digit User ID:</label>
                     <div class="input-group">
@@ -28,6 +30,8 @@
                     </div>
                     <span id="userIdAvailability"></span>
                 </div>
+
+                <!-- Existing User ID Section -->
                 <div id="existingUserIdSection" class="hidden">
                     <label for="userId">Enter your User ID:</label>
                     <div class="input-group">
@@ -38,23 +42,21 @@
                 </div>
             </div>
 
-            <!-- 🔹 User Information Fields -->
+            <!-- New User Fields -->
             <div class="input-group" id="newUserFields">
                 <input type="text" id="name" name="name" placeholder="Full Name" required>
                 <input type="number" id="age" name="age" placeholder="Age" required min="1" max="120">
-                
                 <select id="gender" name="gender" required>
                     <option value="" disabled selected>Select Gender</option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
                     <option value="Other">Other</option>
                 </select>
-
                 <input type="text" id="language" name="language" placeholder="Preferred Language" required>
                 <textarea id="problem" name="problem" placeholder="Describe any health conditions or concerns"></textarea>
             </div>
 
-            <!-- 🔹 Existing User Fields -->
+            <!-- Existing User Fields -->
             <div id="existingUserFields" class="hidden">
                 <input type="text" id="existingLanguage" name="language" placeholder="Preferred Language" required>
                 <textarea id="existingProblem" name="problem" placeholder="Describe any health conditions or concerns"></textarea>
@@ -62,28 +64,29 @@
 
             <hr>
 
-            <!-- 🔹 Blood Pressure Inputs -->
+            <!-- Blood Pressure Inputs -->
             <div class="bp-inputs">
                 <input type="number" id="systolic" name="systolic" placeholder="Systolic Pressure (mmHg)" required min="60" max="250" title="Value must be between 60 and 250">
                 <input type="number" id="diastolic" name="diastolic" placeholder="Diastolic Pressure (mmHg)" required min="40" max="150" title="Value must be between 40 and 150">
             </div>
 
+            <!-- Analyze Button -->
             <button type="submit" id="analyzeBtn" class="ripple" disabled>🔍 Analyze Blood Pressure</button>
         </form>
 
-        <!-- 🔹 AI Diagnosis Output -->
+        <!-- AI Diagnosis Output -->
         <div id="output" class="hidden">
             <h2>AI Analysis Results</h2>
             <div class="diagnosis-content"></div>
         </div>
 
-        <!-- 🔹 BP History Section -->
+        <!-- BP History Section -->
         <div id="bpHistory" class="hidden">
             <h2>Your Blood Pressure History</h2>
             <canvas id="bpChart"></canvas>
         </div>
 
-        <!-- 🔹 Email Report Section -->
+        <!-- Email Report Section -->
         <div id="emailSection" class="hidden">
             <h3>Get Your Report via Email</h3>
             <div class="email-input-group">

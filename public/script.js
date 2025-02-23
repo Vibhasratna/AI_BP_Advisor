@@ -141,24 +141,31 @@ document.getElementById('analyzeBtn').addEventListener('click', async function (
 
         const result = await response.json();
 
-        // Display AI diagnosis result
-        output.innerHTML = `
-        <h2>AI Analysis Results</h2>
-        <div class="diagnosis-content">
-            <strong>💡 AI Diagnosis:</strong><br>
-            ${result.advice || "AI analysis is temporarily unavailable. Please try again later."}
-        </div>
-    `;
-        output.classList.add('show');
+        // Display AI diagnosis result (limit to 5 lines)
+        let aiAdvice = "AI analysis temporarily unavailable due to rate limiting. Please try again later.";
+        try {
+            aiAdvice = await generateAIAdvice(userId, systolic, diastolic);
+        } catch (aiError) {
+            console.error('AI Advice Generation Error:', aiError);
+        }
 
-        // Show email section
-        document.getElementById('emailSection').classList.remove('hidden');
+        output.innerHTML = `
+            <h2>AI Analysis Results</h2>
+            <div class="diagnosis-content">
+                <strong>💡 AI Diagnosis:</strong><br>
+                <pre>${aiAdvice}</pre>
+            </div>
+        `;
+        output.classList.add('show');
 
         // Show BP history for existing users
         if (isExistingUser && result.history) {
             document.getElementById('bpHistory').classList.remove('hidden');
             renderBPChart(result.history);
         }
+
+        // Show email section
+        document.getElementById('emailSection').classList.remove('hidden');
     } catch (error) {
         console.error('Processing error:', error);
         output.innerHTML = `
@@ -171,39 +178,6 @@ document.getElementById('analyzeBtn').addEventListener('click', async function (
     } finally {
         // Re-enable the button
         this.disabled = false;
-    }
-});
-
-// Send Report via Email
-document.getElementById('sendEmail').addEventListener('click', async function () {
-    const email = document.getElementById('email').value.trim();
-    const userId = document.getElementById('existingUser').checked ? document.getElementById('userId').value.trim() : document.getElementById('newUserId').value.trim();
-    const problem = document.getElementById('existingUser').checked ? document.getElementById('existingProblem').value.trim() : document.getElementById('problem').value.trim();
-    const systolic = parseInt(document.getElementById('systolic').value, 10);
-    const diastolic = parseInt(document.getElementById('diastolic').value, 10);
-    const advice = document.getElementById('output').innerText;
-
-    if (!email || !email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-        alert('⚠️ Please enter a valid email address');
-        return;
-    }
-
-    try {
-        const response = await fetch('/api/send-report', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, userId, problem, systolic, diastolic, advice }),
-        });
-
-        if (!response.ok) {
-            throw new Error('Failed to send email');
-        }
-
-        alert('✅ Report sent successfully!');
-        window.location.reload(); // Refresh the page
-    } catch (error) {
-        console.error('Email error:', error);
-        alert('⚠️ Error sending email. Please try again');
     }
 });
 
@@ -267,3 +241,36 @@ function renderBPChart(bpHistory) {
         },
     });
 }
+
+// Send Report via Email
+document.getElementById('sendEmail').addEventListener('click', async function () {
+    const email = document.getElementById('email').value.trim();
+    const userId = document.getElementById('existingUser').checked ? document.getElementById('userId').value.trim() : document.getElementById('newUserId').value.trim();
+    const problem = document.getElementById('existingUser').checked ? document.getElementById('existingProblem').value.trim() : document.getElementById('problem').value.trim();
+    const systolic = parseInt(document.getElementById('systolic').value, 10);
+    const diastolic = parseInt(document.getElementById('diastolic').value, 10);
+    const advice = document.getElementById('output').innerText;
+
+    if (!email || !email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+        alert('⚠️ Please enter a valid email address');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/send-report', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, userId, problem, systolic, diastolic, advice }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to send email');
+        }
+
+        alert('✅ Report sent successfully!');
+        window.location.reload(); // Refresh the page
+    } catch (error) {
+        console.error('Email error:', error);
+        alert('⚠️ Error sending email. Please try again');
+    }
+});

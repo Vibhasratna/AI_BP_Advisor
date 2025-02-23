@@ -17,12 +17,12 @@ app.use(express.static('public'));
 
 // Ola Krutrim API Configuration
 const OLA_KRUTRIM_API_KEY = process.env.OLA_KRUTRIM_API_KEY;
-const OLA_KRUTRIM_API_URL = 'https://cloud.olakrutrim.com/v1/chat/completions '; // Replace with the actual Ola Krutrim API endpoint
+const OLA_KRUTRIM_API_URL = 'https://cloud.olakrutrim.com/v1/chat/completions'; // Replace with the actual Ola Krutrim API endpoint
 
 // Rate Limiter Configuration
 const limiter = new Bottleneck({
-    minTime: 1000, 
-    maxConcurrent: 1, 
+    minTime: 1000, // 1 request per second
+    maxConcurrent: 1, // Only 1 concurrent request
 });
 
 // Cache Configuration
@@ -290,7 +290,7 @@ const generateAIAdvice = limiter.wrap(async (userId, systolic, diastolic, retrie
         const response = await axios.post(
             OLA_KRUTRIM_API_URL,
             {
-                model: "Krutrim-spectre-v2", // Replace with the actual model name
+                model: "DeepSeek-R1-Llama-70B", // Replace with the actual model name
                 messages: [{
                     role: 'user',
                     content: `User ID: ${userId}, BP: ${systolic}/${diastolic}, age: ${rows[0].age}, gender: ${rows[0].gender}, existing problems: ${rows[0].problem || 'none'}. Provide a detailed analysis including: 1) Current BP Status (high/low/normal) 2) Risk Level 3) Whether immediate medical attention is needed 4) Specific lifestyle recommendations 5) Diet suggestions 6) Exercise recommendations`
@@ -388,6 +388,29 @@ async function sendDiagnosisEmail(email, userId, problem, systolic, diastolic, a
         return false;
     }
 }
+
+// Send Report via Email
+app.post('/api/send-report', async (req, res) => {
+    const { email, userId, problem, systolic, diastolic, advice } = req.body;
+
+    if (!email || !userId || !systolic || !diastolic || !advice) {
+        return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    try {
+        const graphImage = await generateGraphImage(userId); // Generate graph image
+        const emailSent = await sendDiagnosisEmail(email, userId, problem, systolic, diastolic, advice, graphImage);
+
+        if (emailSent) {
+            res.json({ message: "Email sent successfully" });
+        } else {
+            res.status(500).json({ error: "Failed to send email" });
+        }
+    } catch (error) {
+        console.error('Email Send Error:', error);
+        res.status(500).json({ error: "Failed to send email" });
+    }
+});
 
 // Start Express Server
 app.listen(port, () => {
