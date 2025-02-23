@@ -79,6 +79,9 @@ document.getElementById('verifyUserId').addEventListener('click', async function
 document.getElementById('analyzeBtn').addEventListener('click', async function (e) {
     e.preventDefault();
 
+    // Disable button to prevent multiple clicks
+    this.disabled = true;
+
     const isExistingUser = document.getElementById('existingUser').checked;
     const userId = isExistingUser ? document.getElementById('userId').value.trim() : document.getElementById('newUserId').value.trim();
     const name = isExistingUser ? null : document.getElementById('name').value.trim();
@@ -92,16 +95,19 @@ document.getElementById('analyzeBtn').addEventListener('click', async function (
 
     if (!userId || !/^\d{4}$/.test(userId)) {
         alert('⚠️ Please enter a valid 4-digit User ID');
+        this.disabled = false;
         return;
     }
 
     if (!systolic || !diastolic || systolic < 60 || systolic > 250 || diastolic < 40 || diastolic > 150) {
         alert('⚠️ Blood pressure values are out of valid range');
+        this.disabled = false;
         return;
     }
 
     if (!isExistingUser && (!name || !gender || !age || !language)) {
         alert('⚠️ Please fill in all required fields for new user registration');
+        this.disabled = false;
         return;
     }
 
@@ -140,7 +146,7 @@ document.getElementById('analyzeBtn').addEventListener('click', async function (
         <h2>AI Analysis Results</h2>
         <div class="diagnosis-content">
             <strong>💡 AI Diagnosis:</strong><br>
-            ${result.advice}
+            ${result.advice || "AI analysis is temporarily unavailable. Please try again later."}
         </div>
     `;
         output.classList.add('show');
@@ -159,12 +165,14 @@ document.getElementById('analyzeBtn').addEventListener('click', async function (
             <h2>Error</h2>
             <div class="diagnosis-content">
                 <strong>⚠️ Error:</strong><br>
-                ${error.message || 'Failed to process request. Please try again.'}
+                AI analysis is temporarily unavailable. Please try again later.
             </div>
         `;
+    } finally {
+        // Re-enable the button
+        this.disabled = false;
     }
 });
-
 
 // Send Report via Email
 document.getElementById('sendEmail').addEventListener('click', async function () {

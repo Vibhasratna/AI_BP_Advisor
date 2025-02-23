@@ -2,8 +2,11 @@ require('dotenv').config();
 const express = require('express');
 const mysql = require('mysql2/promise');
 const cors = require('cors');
-const OpenAI = require('openai');
+const axios = require('axios'); // For making HTTP requests to Ola Krutrim Cloud
 const nodemailer = require('nodemailer');
+const Bottleneck = require('bottleneck'); // For rate limiting
+const NodeCache = require('node-cache'); // For caching
+const { createCanvas } = require('canvas'); // For generating graph images
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -12,7 +15,18 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+// Ola Krutrim API Configuration
+const OLA_KRUTRIM_API_KEY = process.env.OLA_KRUTRIM_API_KEY;
+const OLA_KRUTRIM_API_URL = 'https://cloud.olakrutrim.com/v1/chat/completions '; // Replace with the actual Ola Krutrim API endpoint
+
+// Rate Limiter Configuration
+const limiter = new Bottleneck({
+    minTime: 1000, 
+    maxConcurrent: 1, 
+});
+
+// Cache Configuration
+const cache = new NodeCache({ stdTTL: 3600 }); // Cache responses for 1 hour
 
 // Email Setup (Nodemailer)
 const transporter = nodemailer.createTransport({
@@ -136,7 +150,7 @@ app.post('/api/register', async (req, res) => {
 
         await connection.commit();
 
-        // Generate AI advice (with fallback if OpenAI API fails)
+        // Generate AI advice (with fallback if Ola Krutrim API fails)
         let aiAdvice = "AI analysis temporarily unavailable due to rate limiting. Please try again later.";
         try {
             aiAdvice = await generateAIAdvice(userId, systolic, diastolic);
@@ -146,7 +160,8 @@ app.post('/api/register', async (req, res) => {
 
         // Send email if provided
         if (email) {
-            await sendDiagnosisEmail(email, userId, problem, systolic, diastolic, aiAdvice);
+            const graphImage = await generateGraphImage(userId); // Generate graph image
+            await sendDiagnosisEmail(email, userId, problem, systolic, diastolic, aiAdvice, graphImage);
         }
 
         res.status(201).json({
@@ -190,7 +205,6 @@ app.post('/api/verify-existing-user', async (req, res) => {
 });
 
 // Update BP for Existing Users
-// Update BP for Existing Users
 app.post('/api/update-bp', async (req, res) => {
     const { userId, language, problem, systolic, diastolic, email } = req.body;
 
@@ -223,7 +237,7 @@ app.post('/api/update-bp', async (req, res) => {
             [userId]
         );
 
-        // Generate AI advice (with fallback if OpenAI API fails)
+        // Generate AI advice (with fallback if Ola Krutrim API fails)
         let aiAdvice = "AI analysis temporarily unavailable due to rate limiting. Please try again later.";
         try {
             aiAdvice = await generateAIAdvice(userId, systolic, diastolic);
@@ -233,7 +247,8 @@ app.post('/api/update-bp', async (req, res) => {
 
         // Send email if provided
         if (email) {
-            await sendDiagnosisEmail(email, userId, problem, systolic, diastolic, aiAdvice);
+            const graphImage = await generateGraphImage(userId); // Generate graph image
+            await sendDiagnosisEmail(email, userId, problem, systolic, diastolic, aiAdvice, graphImage);
         }
 
         res.json({
@@ -255,9 +270,15 @@ app.post('/api/update-bp', async (req, res) => {
     }
 });
 
+// Generate AI BP Analysis with Rate Limiting and Caching
+const generateAIAdvice = limiter.wrap(async (userId, systolic, diastolic, retries = 3, delay = 2000) => {
+    const cacheKey = `${userId}-${systolic}-${diastolic}`;
+    const cachedResponse = cache.get(cacheKey);
 
-// Generate AI BP Analysis
-async function generateAIAdvice(userId, systolic, diastolic) {
+    if (cachedResponse) {
+        return cachedResponse;
+    }
+
     try {
         const [rows] = await pool.query('SELECT age, gender, problem FROM users WHERE id = ?', [userId]);
 
@@ -265,39 +286,97 @@ async function generateAIAdvice(userId, systolic, diastolic) {
             throw new Error('User data not found');
         }
 
-        const aiResponse = await openai.chat.completions.create({
-            model: 'gpt-3.5-turbo',
-            messages: [{
-                role: 'user',
-                content: `User ID: ${userId}, BP: ${systolic}/${diastolic}, age: ${rows[0].age}, gender: ${rows[0].gender}, existing problems: ${rows[0].problem || 'none'}. Provide a detailed analysis including: 1) Current BP Status (high/low/normal) 2) Risk Level 3) Whether immediate medical attention is needed 4) Specific lifestyle recommendations 5) Diet suggestions 6) Exercise recommendations`
-            }],
-            max_tokens: 500,
-        });
+        // Call Ola Krutrim API
+        const response = await axios.post(
+            OLA_KRUTRIM_API_URL,
+            {
+                model: "Krutrim-spectre-v2", // Replace with the actual model name
+                messages: [{
+                    role: 'user',
+                    content: `User ID: ${userId}, BP: ${systolic}/${diastolic}, age: ${rows[0].age}, gender: ${rows[0].gender}, existing problems: ${rows[0].problem || 'none'}. Provide a detailed analysis including: 1) Current BP Status (high/low/normal) 2) Risk Level 3) Whether immediate medical attention is needed 4) Specific lifestyle recommendations 5) Diet suggestions 6) Exercise recommendations`
+                }],
+                max_tokens: 500,
+            },
+            {
+                headers: {
+                    'Authorization': `Bearer ${OLA_KRUTRIM_API_KEY}`,
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
 
-        return aiResponse.choices[0]?.message?.content || "AI analysis unavailable. Please try again.";
+        const advice = response.data.choices[0]?.message?.content || "AI analysis unavailable. Please try again.";
+        cache.set(cacheKey, advice); // Cache the response
+        return advice;
     } catch (error) {
         console.error('AI Advice Generation Error:', error);
-        if (error.status === 429) {
-            return "AI analysis temporarily unavailable due to rate limiting. Please try again later.";
-            window.location.reload(); // Refresh the page
+        if (error.response?.status === 429 && retries > 0) {
+            console.log(`Retrying... Attempts left: ${retries}. Waiting for ${delay}ms...`);
+            await new Promise(resolve => setTimeout(resolve, delay)); // Wait before retrying
+            return generateAIAdvice(userId, systolic, diastolic, retries - 1, delay * 2); // Exponential backoff
         }
-        return "AI analysis unavailable. Please try again.";
+        return "AI analysis temporarily unavailable due to rate limiting. Please try again later.";
     }
+});
+
+// Generate Graph Image
+async function generateGraphImage(userId) {
+    const [history] = await pool.query(
+        'SELECT systolic, diastolic, recorded_at FROM bp_records WHERE user_id = ? ORDER BY recorded_at ASC',
+        [userId]
+    );
+
+    const labels = history.map(record => new Date(record.recorded_at).toLocaleDateString());
+    const systolicData = history.map(record => record.systolic);
+    const diastolicData = history.map(record => record.diastolic);
+
+    const canvas = createCanvas(800, 400);
+    const ctx = canvas.getContext('2d');
+
+    // Draw graph
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.strokeStyle = '#ff0000';
+    ctx.beginPath();
+    systolicData.forEach((value, index) => {
+        const x = (index / (labels.length - 1)) * canvas.width;
+        const y = canvas.height - (value / 250) * canvas.height;
+        if (index === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    ctx.strokeStyle = '#007BFF';
+    ctx.beginPath();
+    diastolicData.forEach((value, index) => {
+        const x = (index / (labels.length - 1)) * canvas.width;
+        const y = canvas.height - (value / 150) * canvas.height;
+        if (index === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    // Convert canvas to image
+    return canvas.toDataURL();
 }
 
-// Send Diagnosis Email
-async function sendDiagnosisEmail(email, userId, problem, systolic, diastolic, advice) {
+// Send Diagnosis Email with Graph Image
+async function sendDiagnosisEmail(email, userId, problem, systolic, diastolic, advice, graphImage) {
     const mailOptions = {
         from: process.env.EMAIL_USER,
         to: email,
         subject: '📊 Your AI Blood Pressure Diagnosis Report',
-        text: `
-            User ID: ${userId}
-            Health Conditions: ${problem || 'None'}
-            Systolic Pressure: ${systolic}
-            Diastolic Pressure: ${diastolic}
-            Diagnosis Report: ${advice}
-            Thank you for visiting!
+        html: `
+            <h2>AI Blood Pressure Diagnosis Report</h2>
+            <p><strong>User ID:</strong> ${userId}</p>
+            <p><strong>Health Conditions:</strong> ${problem || 'None'}</p>
+            <p><strong>Systolic Pressure:</strong> ${systolic}</p>
+            <p><strong>Diastolic Pressure:</strong> ${diastolic}</p>
+            <p><strong>Diagnosis Report:</strong> ${advice}</p>
+            <h3>Blood Pressure History</h3>
+            <img src="${graphImage}" alt="Blood Pressure Graph" />
+            <p>Thank you for visiting!</p>
         `,
     };
 
