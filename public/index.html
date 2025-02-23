@@ -14,39 +14,61 @@
 
         <!-- 🔹 User Input Form -->
         <form id="bpForm">
-            <label>
+            <label class="checkbox-label">
                 <input type="checkbox" id="existingUser"> Already a user?
             </label>
 
-            <!-- 🔹 User ID Input (Only for existing users) -->
-            <div id="userIdSection" class="hidden">
-                <label for="userId">Enter User ID:</label>
-                <input type="text" id="userId" name="userId" placeholder="Your User ID">
+            <!-- 🔹 User ID Section -->
+            <div id="userIdSection">
+                <div id="newUserIdSection">
+                    <label for="newUserId">Create your 4-digit User ID:</label>
+                    <div class="input-group">
+                        <input type="text" id="newUserId" pattern="\d{4}" maxlength="4" title="Please enter a 4-digit number" placeholder="Enter 4-digit User ID">
+                        <button type="button" id="checkUserId">Check Availability</button>
+                    </div>
+                    <span id="userIdAvailability"></span>
+                </div>
+                <div id="existingUserIdSection" class="hidden">
+                    <label for="userId">Enter your User ID:</label>
+                    <div class="input-group">
+                        <input type="text" id="userId" pattern="\d{4}" maxlength="4" title="Please enter a 4-digit number" placeholder="Enter your User ID">
+                        <button type="button" id="verifyUserId">Verify User ID</button>
+                    </div>
+                    <span id="userVerificationStatus"></span>
+                </div>
             </div>
 
             <!-- 🔹 User Information Fields -->
-            <input type="text" id="name" name="name" placeholder="Full Name" required>
-            <input type="number" id="age" name="age" placeholder="Age" required min="1" max="120">
-            
-            <select id="gender" name="gender" required>
-                <option value="" disabled selected>Select Gender</option>
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-            </select>
+            <div class="input-group" id="newUserFields">
+                <input type="text" id="name" name="name" placeholder="Full Name" required>
+                <input type="number" id="age" name="age" placeholder="Age" required min="1" max="120">
+                
+                <select id="gender" name="gender" required>
+                    <option value="" disabled selected>Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
 
-            <input type="text" id="language" name="language" placeholder="Preferred Language" required>
-            <textarea id="problem" name="problem" placeholder="Existing Problems or Diseases (Optional)"></textarea>
+                <input type="text" id="language" name="language" placeholder="Preferred Language" required>
+                <textarea id="problem" name="problem" placeholder="Describe any health conditions or concerns"></textarea>
+            </div>
+
+            <!-- 🔹 Existing User Fields -->
+            <div id="existingUserFields" class="hidden">
+                <input type="text" id="existingLanguage" name="language" placeholder="Preferred Language" required>
+                <textarea id="existingProblem" name="problem" placeholder="Describe any health conditions or concerns"></textarea>
+            </div>
 
             <hr>
 
             <!-- 🔹 Blood Pressure Inputs -->
             <div class="bp-inputs">
-                <input type="number" id="systolic" name="systolic" placeholder="Systolic Pressure (mmHg)" required min="60" max="250">
-                <input type="number" id="diastolic" name="diastolic" placeholder="Diastolic Pressure (mmHg)" required min="40" max="150">
+                <input type="number" id="systolic" name="systolic" placeholder="Systolic Pressure (mmHg)" required min="60" max="250" title="Value must be between 60 and 250">
+                <input type="number" id="diastolic" name="diastolic" placeholder="Diastolic Pressure (mmHg)" required min="40" max="150" title="Value must be between 40 and 150">
             </div>
 
-            <button type="submit">🔍 Analyze Blood Pressure</button>
+            <button type="submit" id="analyzeBtn" class="ripple" disabled>🔍 Analyze Blood Pressure</button>
         </form>
 
         <!-- 🔹 AI Diagnosis Output -->
@@ -55,10 +77,7 @@
             <div class="diagnosis-content"></div>
         </div>
 
-        <!-- 🔹 Show BP History Button -->
-        <button id="showHistoryBtn" class="hidden">📈 Show BP History</button>
-
-        <!-- 🔹 BP History Chart -->
+        <!-- 🔹 BP History Section -->
         <div id="bpHistory" class="hidden">
             <h2>Your Blood Pressure History</h2>
             <canvas id="bpChart"></canvas>
@@ -69,7 +88,7 @@
             <h3>Get Your Report via Email</h3>
             <div class="email-input-group">
                 <input type="email" id="email" name="email" placeholder="Enter your email address" required>
-                <button id="sendEmail">📧 Send Report</button>
+                <button id="sendEmail" class="ripple">📧 Send Report</button>
             </div>
         </div>
     </div>

@@ -1,169 +1,205 @@
-// 🔹 **Existing User ID Check**
+// Toggle between new and existing user forms
 document.getElementById('existingUser').addEventListener('change', function () {
     const isExistingUser = this.checked;
-    const userIdInput = document.getElementById('userId');
-    const nameInput = document.getElementById('name');
-    const ageInput = document.getElementById('age');
-    const genderInput = document.getElementById('gender');
-    const languageInput = document.getElementById('language');
-    const problemInput = document.getElementById('problem');
-
-    document.getElementById('userIdSection').classList.toggle('hidden', !isExistingUser);
-
-    nameInput.disabled = isExistingUser;
-    genderInput.disabled = isExistingUser;
-
-    if (!isExistingUser) {
-        nameInput.value = "";
-        genderInput.value = "";
-        ageInput.value = "";
-        languageInput.value = "";
-        problemInput.value = "";
-        return;
-    }
-
-    const userId = userIdInput.value.trim();
-    if (!userId || !/^\d+$/.test(userId)) {
-        alert('⚠️ User ID must be a valid number.');
-        this.checked = false;
-        nameInput.disabled = false;
-        genderInput.disabled = false;
-        return;
-    }
-
-    fetch(`/api/users/${userId}`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.error) {
-            alert('⚠️ User ID not found. Please check your ID.');
-            this.checked = false;
-            nameInput.disabled = false;
-            genderInput.disabled = false;
-        } else {
-            nameInput.value = data.name || "";
-            genderInput.value = data.gender || "";
-            ageInput.value = data.age || "";
-            problemInput.value = data.problem || "";
-            languageInput.value = data.language || "";
-            nameInput.disabled = true;
-            genderInput.disabled = true;
-        }
-    })
-    .catch(error => {
-        console.error('❌ Error fetching user info:', error);
-        alert('⚠️ Server error. Please try again.');
-        this.checked = false;
-        nameInput.disabled = false;
-        genderInput.disabled = false;
-    });
+    document.getElementById('newUserIdSection').classList.toggle('hidden', isExistingUser);
+    document.getElementById('existingUserIdSection').classList.toggle('hidden', !isExistingUser);
+    document.getElementById('newUserFields').classList.toggle('hidden', isExistingUser);
+    document.getElementById('existingUserFields').classList.toggle('hidden', !isExistingUser);
+    document.getElementById('resultsSection').classList.add('hidden');
+    document.getElementById('analyzeBtn').disabled = true;
 });
 
-// 🔹 **BP Data Submission**
-document.getElementById('bpForm').addEventListener('submit', function (e) {
+// Check User ID Availability for New Users
+document.getElementById('checkUserId').addEventListener('click', async function () {
+    const userId = document.getElementById('newUserId').value.trim();
+    const availabilitySpan = document.getElementById('userIdAvailability');
+
+    if (!userId || !/^\d{4}$/.test(userId)) {
+        alert('⚠️ Please enter a valid 4-digit User ID');
+        return;
+    }
+
+    availabilitySpan.textContent = '⌛ Checking availability...';
+    availabilitySpan.className = 'checking';
+
+    try {
+        const response = await fetch(`/api/verify-userid/${userId}`);
+        const data = await response.json();
+
+        if (data.available) {
+            availabilitySpan.textContent = '✅ User ID is available';
+            availabilitySpan.className = 'available';
+            document.getElementById('analyzeBtn').disabled = false;
+        } else {
+            availabilitySpan.textContent = '⚠️ User ID is already taken. Please try another ID';
+            availabilitySpan.className = 'unavailable';
+        }
+    } catch (error) {
+        console.error('Availability check error:', error);
+        availabilitySpan.textContent = '⚠️ Error checking availability. Please try again';
+        availabilitySpan.className = 'unavailable';
+    }
+});
+
+// Verify Existing User ID
+document.getElementById('verifyUserId').addEventListener('click', async function () {
+    const userId = document.getElementById('userId').value.trim();
+    const verificationStatus = document.getElementById('userVerificationStatus');
+
+    if (!userId || !/^\d{4}$/.test(userId)) {
+        alert('⚠️ Please enter a valid 4-digit User ID');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/verify-existing-user', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            verificationStatus.textContent = '✅ User verified successfully';
+            verificationStatus.className = 'verified';
+            document.getElementById('analyzeBtn').disabled = false;
+        } else {
+            verificationStatus.textContent = '⚠️ User ID not found. Please check and try again';
+            verificationStatus.className = 'not-verified';
+        }
+    } catch (error) {
+        console.error('Verification error:', error);
+        verificationStatus.textContent = '⚠️ Error verifying user. Please try again';
+        verificationStatus.className = 'not-verified';
+    }
+});
+
+// Analyze Blood Pressure (New and Existing Users)
+document.getElementById('analyzeBtn').addEventListener('click', async function (e) {
     e.preventDefault();
 
     const isExistingUser = document.getElementById('existingUser').checked;
-    const userId = document.getElementById('userId').value.trim();
+    const userId = isExistingUser ? document.getElementById('userId').value.trim() : document.getElementById('newUserId').value.trim();
+    const name = isExistingUser ? null : document.getElementById('name').value.trim();
+    const age = isExistingUser ? null : parseInt(document.getElementById('age').value, 10);
+    const gender = isExistingUser ? null : document.getElementById('gender').value.trim();
+    const language = isExistingUser ? document.getElementById('existingLanguage').value.trim() : document.getElementById('language').value.trim();
+    const problem = isExistingUser ? document.getElementById('existingProblem').value.trim() : document.getElementById('problem').value.trim();
     const systolic = parseInt(document.getElementById('systolic').value, 10);
     const diastolic = parseInt(document.getElementById('diastolic').value, 10);
-    const problem = document.getElementById('problem').value.trim();
-
-    if (isExistingUser && (!userId || !/^\d+$/.test(userId))) {
-        alert('⚠️ User ID must be a valid number.');
-        return;
-    }
-
-    if (systolic <= 0 || diastolic <= 0) {
-        alert('⚠️ Please enter valid BP values.');
-        return;
-    }
-
-    const data = isExistingUser ? {
-        userId,
-        systolic,
-        diastolic,
-        problem
-    } : {
-        name: document.getElementById('name').value,
-        age: document.getElementById('age').value,
-        gender: document.getElementById('gender').value,
-        language: document.getElementById('language').value,
-        problem,
-        systolic,
-        diastolic
-    };
-
-    const apiUrl = isExistingUser ? '/api/check-bp' : '/register';
-
-    fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(result => {
-        if (result.error) {
-            alert(result.error);
-            return;
-        }
-
-        document.getElementById('output').innerHTML = `<strong>💡 AI Diagnosis:</strong><br>${result.advice}`;
-        document.getElementById('output').classList.remove('hidden');
-
-        if (result.history && result.history.length > 0) {
-            document.getElementById('showHistoryBtn').classList.remove('hidden');
-            document.getElementById('emailSection').classList.remove('hidden');
-
-            localStorage.setItem('bpHistory', JSON.stringify(result.history));
-            localStorage.setItem('aiAdvice', result.advice);
-
-            renderBPChart(result.history);
-        } else {
-            document.getElementById('bpHistory').classList.add('hidden');
-        }
-    })
-    .catch(error => console.error('❌ Error:', error));
-});
-
-// 🔹 **Show BP History**
-document.getElementById('showHistoryBtn').addEventListener('click', function () {
-    const bpHistory = JSON.parse(localStorage.getItem('bpHistory')) || [];
-    if (bpHistory.length > 0) {
-        document.getElementById('bpHistory').classList.remove('hidden');
-        renderBPChart(bpHistory);
-    }
-});
-
-// 🔹 **Send BP Report via Email**
-document.getElementById('sendEmail').addEventListener('click', function () {
     const email = document.getElementById('email').value.trim();
-    const history = JSON.parse(localStorage.getItem('bpHistory'));
-    const advice = localStorage.getItem('aiAdvice');
 
-    if (!email || !history || history.length === 0) {
-        alert('⚠️ Please enter a valid email and check your BP history.');
+    if (!userId || !/^\d{4}$/.test(userId)) {
+        alert('⚠️ Please enter a valid 4-digit User ID');
         return;
     }
 
-    if (!email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
-        alert('⚠️ Please enter a valid email address.');
+    if (!systolic || !diastolic || systolic < 60 || systolic > 250 || diastolic < 40 || diastolic > 150) {
+        alert('⚠️ Blood pressure values are out of valid range');
         return;
     }
 
-    fetch('/api/send-report', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, history, advice })
-    })
-    .then(response => response.json())
-    .then(result => alert(result.message))
-    .catch(error => console.error('❌ Error:', error));
+    if (!isExistingUser && (!name || !gender || !age || !language)) {
+        alert('⚠️ Please fill in all required fields for new user registration');
+        return;
+    }
+
+    try {
+        const output = document.getElementById('output');
+        output.innerHTML = '<div class="loading">Analyzing data...</div>';
+        output.classList.remove('hidden');
+
+        const apiUrl = isExistingUser ? '/api/update-bp' : '/api/register';
+        const payload = {
+            userId: parseInt(userId),
+            language,
+            problem,
+            systolic,
+            diastolic,
+            email,
+        };
+
+        // Add additional fields for new user registration
+        if (!isExistingUser) {
+            payload.name = name;
+            payload.age = age;
+            payload.gender = gender;
+        }
+
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+
+        const result = await response.json();
+
+        // Display AI diagnosis result
+        output.innerHTML = `
+        <h2>AI Analysis Results</h2>
+        <div class="diagnosis-content">
+            <strong>💡 AI Diagnosis:</strong><br>
+            ${result.advice}
+        </div>
+    `;
+        output.classList.add('show');
+
+        // Show email section
+        document.getElementById('emailSection').classList.remove('hidden');
+
+        // Show BP history for existing users
+        if (isExistingUser && result.history) {
+            document.getElementById('bpHistory').classList.remove('hidden');
+            renderBPChart(result.history);
+        }
+    } catch (error) {
+        console.error('Processing error:', error);
+        output.innerHTML = `
+            <h2>Error</h2>
+            <div class="diagnosis-content">
+                <strong>⚠️ Error:</strong><br>
+                ${error.message || 'Failed to process request. Please try again.'}
+            </div>
+        `;
+    }
 });
 
-// 📊 **Render BP Chart**
+
+// Send Report via Email
+document.getElementById('sendEmail').addEventListener('click', async function () {
+    const email = document.getElementById('email').value.trim();
+    const userId = document.getElementById('existingUser').checked ? document.getElementById('userId').value.trim() : document.getElementById('newUserId').value.trim();
+    const problem = document.getElementById('existingUser').checked ? document.getElementById('existingProblem').value.trim() : document.getElementById('problem').value.trim();
+    const systolic = parseInt(document.getElementById('systolic').value, 10);
+    const diastolic = parseInt(document.getElementById('diastolic').value, 10);
+    const advice = document.getElementById('output').innerText;
+
+    if (!email || !email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+        alert('⚠️ Please enter a valid email address');
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/send-report', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, userId, problem, systolic, diastolic, advice }),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to send email');
+        }
+
+        alert('✅ Report sent successfully!');
+        window.location.reload(); // Refresh the page
+    } catch (error) {
+        console.error('Email error:', error);
+        alert('⚠️ Error sending email. Please try again');
+    }
+});
+
+// Render BP Chart
 function renderBPChart(bpHistory) {
     const ctx = document.getElementById('bpChart').getContext('2d');
 
@@ -183,26 +219,43 @@ function renderBPChart(bpHistory) {
                 {
                     label: 'Systolic Pressure',
                     data: systolicData,
-                    borderColor: 'red',
-                    fill: false,
-                    tension: 0.4
+                    borderColor: '#ff0000',
+                    backgroundColor: 'rgba(255, 0, 0, 0.1)',
+                    fill: true,
+                    tension: 0.4,
                 },
                 {
                     label: 'Diastolic Pressure',
                     data: diastolicData,
-                    borderColor: 'blue',
-                    fill: false,
-                    tension: 0.4
-                }
-            ]
+                    borderColor: '#007BFF',
+                    backgroundColor: 'rgba(0, 123, 255, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                },
+            ],
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
             scales: {
-                x: { title: { display: true, text: 'Date' } },
-                y: { title: { display: true, text: 'BP (mmHg)' } }
-            }
-        }
+                x: {
+                    title: { display: true, text: 'Date' },
+                    grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                },
+                y: {
+                    title: { display: true, text: 'BP (mmHg)' },
+                    grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                },
+            },
+            plugins: {
+                legend: {
+                    labels: {
+                        font: {
+                            family: "'Arial', sans-serif",
+                        },
+                    },
+                },
+            },
+        },
     });
 }
