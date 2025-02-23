@@ -247,6 +247,8 @@ button:hover {
     border-radius: 12px;
     display: none;
     box-shadow: 0 3px 15px rgba(0, 0, 0, 0.08);
+    width: 100%; /* Ensure it takes full width */
+    box-sizing: border-box; /* Include padding in width calculation */
 }
 
 #output.show {
@@ -514,6 +516,7 @@ textarea:invalid {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
 /* Diagnosis Content Styling */
 .diagnosis-content {
     background-color: #f9f9f9;
@@ -526,7 +529,9 @@ textarea:invalid {
     line-height: 1.5;
     white-space: pre-wrap; /* Preserve line breaks */
     overflow: auto;
-    max-height: 150px; /* Limit height for better alignment */
+    max-height: 200px; /* Adjust height as needed */
+    width: 100%; /* Ensure it takes full width */
+    box-sizing: border-box; /* Include padding in width calculation */
 }
 
 /* Graph Container Styling */

@@ -290,7 +290,7 @@ const generateAIAdvice = limiter.wrap(async (userId, systolic, diastolic, retrie
         const response = await axios.post(
             OLA_KRUTRIM_API_URL,
             {
-                model: "DeepSeek-R1-Llama-70B", // Replace with the actual model name
+                model: "Krutrim-spectre-v2", // Replace with the actual model name
                 messages: [{
                     role: 'user',
                     content: `User ID: ${userId}, BP: ${systolic}/${diastolic}, age: ${rows[0].age}, gender: ${rows[0].gender}, existing problems: ${rows[0].problem || 'none'}. Provide a detailed analysis including: 1) Current BP Status (high/low/normal) 2) Risk Level 3) Whether immediate medical attention is needed 4) Specific lifestyle recommendations 5) Diet suggestions 6) Exercise recommendations`
@@ -360,41 +360,11 @@ async function generateGraphImage(userId) {
     // Convert canvas to image
     return canvas.toDataURL();
 }
-
-// Send Diagnosis Email with Graph Image
-async function sendDiagnosisEmail(email, userId, problem, systolic, diastolic, advice, graphImage) {
-    const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to: email,
-        subject: '📊 Your AI Blood Pressure Diagnosis Report',
-        html: `
-            <h2>AI Blood Pressure Diagnosis Report</h2>
-            <p><strong>User ID:</strong> ${userId}</p>
-            <p><strong>Health Conditions:</strong> ${problem || 'None'}</p>
-            <p><strong>Systolic Pressure:</strong> ${systolic}</p>
-            <p><strong>Diastolic Pressure:</strong> ${diastolic}</p>
-            <p><strong>Diagnosis Report:</strong> ${advice}</p>
-            <h3>Blood Pressure History</h3>
-            <img src="${graphImage}" alt="Blood Pressure Graph" />
-            <p>Thank you for visiting!</p>
-        `,
-    };
-
-    try {
-        await transporter.sendMail(mailOptions);
-        return true;
-    } catch (error) {
-        console.error('Email Send Error:', error);
-        return false;
-    }
-}
-
-// Send Report via Email
-app.post('/api/send-report', async (req, res) => {
+app.post('/api/send-email', async (req, res) => {
     const { email, userId, problem, systolic, diastolic, advice } = req.body;
 
     if (!email || !userId || !systolic || !diastolic || !advice) {
-        return res.status(400).json({ error: "Missing required fields" });
+        return res.status(400).json({ error: "Missing required fields for email sending." });
     }
 
     try {
@@ -402,15 +372,44 @@ app.post('/api/send-report', async (req, res) => {
         const emailSent = await sendDiagnosisEmail(email, userId, problem, systolic, diastolic, advice, graphImage);
 
         if (emailSent) {
-            res.json({ message: "Email sent successfully" });
+            res.json({ success: true, message: "Email sent successfully!" });
         } else {
-            res.status(500).json({ error: "Failed to send email" });
+            res.status(500).json({ error: "Failed to send email." });
         }
     } catch (error) {
-        console.error('Email Send Error:', error);
-        res.status(500).json({ error: "Failed to send email" });
+        console.error('Error in /api/send-email:', error);
+        res.status(500).json({ error: "Internal server error. Please try again." });
     }
 });
+// Send Diagnosis Email with Graph Image
+async function sendDiagnosisEmail(email, userId, problem, systolic, diastolic, advice, graphImage) {
+    const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: '📊 Your AI Blood Pressure Diagnosis Report',
+        html: `
+            <h1>AI Blood Pressure Diagnosis Report</h1>
+            <h3><strong>User ID:</strong> ${userId}</h3>
+            <h4><strong>Health Conditions:</strong> ${problem || 'None'}</h4>
+            <h5><strong>Systolic Pressure:</strong> ${systolic}</h5>
+            <h5><strong>Diastolic Pressure:</strong> ${diastolic}</h5>
+            <p>Diagnosis Report: ${advice}</p>
+            <h3>Blood Pressure History</h3>
+            <img src="${graphImage}" alt="Blood Pressure Graph" />
+            <p>Thank you for visiting!</p>
+        `,
+    };
+
+    try {
+        // Send the email
+        const info = await transporter.sendMail(mailOptions);
+        console.log('Email sent successfully to:', email); // Log success (optional)
+        return true;
+    } catch (error) {
+        console.error('Email Send Error:', error); // Log the full error
+        return false;
+    }
+}
 
 // Start Express Server
 app.listen(port, () => {

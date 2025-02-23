@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,6 +8,7 @@
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
     <div class="container">
         <h1>🩺 AI Blood Pressure Advisor</h1>
@@ -25,7 +27,8 @@
                 <div id="newUserIdSection">
                     <label for="newUserId">Create your 4-digit User ID:</label>
                     <div class="input-group">
-                        <input type="text" id="newUserId" pattern="\d{4}" maxlength="4" title="Please enter a 4-digit number" placeholder="Enter 4-digit User ID">
+                        <input type="text" id="newUserId" pattern="\d{4}" maxlength="4"
+                            title="Please enter a 4-digit number" placeholder="Enter 4-digit User ID">
                         <button type="button" id="checkUserId">Check Availability</button>
                     </div>
                     <span id="userIdAvailability"></span>
@@ -35,7 +38,8 @@
                 <div id="existingUserIdSection" class="hidden">
                     <label for="userId">Enter your User ID:</label>
                     <div class="input-group">
-                        <input type="text" id="userId" pattern="\d{4}" maxlength="4" title="Please enter a 4-digit number" placeholder="Enter your User ID">
+                        <input type="text" id="userId" pattern="\d{4}" maxlength="4"
+                            title="Please enter a 4-digit number" placeholder="Enter your User ID">
                         <button type="button" id="verifyUserId">Verify User ID</button>
                     </div>
                     <span id="userVerificationStatus"></span>
@@ -53,21 +57,25 @@
                     <option value="Other">Other</option>
                 </select>
                 <input type="text" id="language" name="language" placeholder="Preferred Language" required>
-                <textarea id="problem" name="problem" placeholder="Describe any health conditions or concerns"></textarea>
+                <textarea id="problem" name="problem"
+                    placeholder="Describe any health conditions or concerns"></textarea>
             </div>
 
             <!-- Existing User Fields -->
             <div id="existingUserFields" class="hidden">
                 <input type="text" id="existingLanguage" name="language" placeholder="Preferred Language" required>
-                <textarea id="existingProblem" name="problem" placeholder="Describe any health conditions or concerns"></textarea>
+                <textarea id="existingProblem" name="problem"
+                    placeholder="Describe any health conditions or concerns"></textarea>
             </div>
 
             <hr>
 
             <!-- Blood Pressure Inputs -->
             <div class="bp-inputs">
-                <input type="number" id="systolic" name="systolic" placeholder="Systolic Pressure (mmHg)" required min="60" max="250" title="Value must be between 60 and 250">
-                <input type="number" id="diastolic" name="diastolic" placeholder="Diastolic Pressure (mmHg)" required min="40" max="150" title="Value must be between 40 and 150">
+                <input type="number" id="systolic" name="systolic" placeholder="Systolic Pressure (mmHg)" required
+                    min="60" max="250" title="Value must be between 60 and 250">
+                <input type="number" id="diastolic" name="diastolic" placeholder="Diastolic Pressure (mmHg)" required
+                    min="40" max="150" title="Value must be between 40 and 150">
             </div>
 
             <!-- Analyze Button -->
@@ -89,14 +97,16 @@
         <!-- Email Report Section -->
         <div id="emailSection" class="hidden">
             <h3>Get Your Report via Email</h3>
-            <div class="email-input-group">
+            <div class="input-group">
                 <input type="email" id="email" name="email" placeholder="Enter your email address" required>
                 <button id="sendEmail" class="ripple">📧 Send Report</button>
             </div>
         </div>
     </div>
 
+
     <!-- Include JavaScript -->
     <script src="script.js"></script>
 </body>
+
 </html>
