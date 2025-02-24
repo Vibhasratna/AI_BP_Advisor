@@ -91,7 +91,6 @@ document.getElementById('analyzeBtn').addEventListener('click', async function (
     const problem = isExistingUser ? document.getElementById('existingProblem').value.trim() : document.getElementById('problem').value.trim();
     const systolic = parseInt(document.getElementById('systolic').value, 10);
     const diastolic = parseInt(document.getElementById('diastolic').value, 10);
-    const email = document.getElementById('email').value.trim();
 
     if (!userId || !/^\d{4}$/.test(userId)) {
         alert('⚠️ Please enter a valid 4-digit User ID');
@@ -123,7 +122,6 @@ document.getElementById('analyzeBtn').addEventListener('click', async function (
             problem,
             systolic,
             diastolic,
-            email,
         };
 
         // Add additional fields for new user registration
@@ -187,8 +185,8 @@ document.getElementById('sendEmail').addEventListener('click', async function (e
     e.preventDefault();
 
     const email = document.getElementById('email').value.trim();
-    const userId = document.getElementById('userId').value.trim();
-    const problem = document.getElementById('problem').value.trim();
+    const userId = document.getElementById('existingUser').checked ? document.getElementById('userId').value.trim() : document.getElementById('newUserId').value.trim();
+    const problem = document.getElementById('existingUser').checked ? document.getElementById('existingProblem').value.trim() : document.getElementById('problem').value.trim();
     const systolic = parseInt(document.getElementById('systolic').value, 10);
     const diastolic = parseInt(document.getElementById('diastolic').value, 10);
     const advice = document.querySelector('.diagnosis-content pre').innerText;

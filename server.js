@@ -290,7 +290,7 @@ const generateAIAdvice = limiter.wrap(async (userId, systolic, diastolic, retrie
         const response = await axios.post(
             OLA_KRUTRIM_API_URL,
             {
-                model: "Krutrim-spectre-v2", // Replace with the actual model name
+                model: "Mistral-Nemo-Krutrim", // Replace with the actual model name
                 messages: [{
                     role: 'user',
                     content: `User ID: ${userId}, BP: ${systolic}/${diastolic}, age: ${rows[0].age}, gender: ${rows[0].gender}, existing problems: ${rows[0].problem || 'none'}. Provide a detailed analysis including: 1) Current BP Status (high/low/normal) 2) Risk Level 3) Whether immediate medical attention is needed 4) Specific lifestyle recommendations 5) Diet suggestions 6) Exercise recommendations`
@@ -393,7 +393,7 @@ async function sendDiagnosisEmail(email, userId, problem, systolic, diastolic, a
             <h4><strong>Health Conditions:</strong> ${problem || 'None'}</h4>
             <h5><strong>Systolic Pressure:</strong> ${systolic}</h5>
             <h5><strong>Diastolic Pressure:</strong> ${diastolic}</h5>
-            <p>Diagnosis Report: ${advice}</p>
+            <p><strong>Diagnosis Report: </strong>${advice}</p>
             <h3>Blood Pressure History</h3>
             <img src="${graphImage}" alt="Blood Pressure Graph" />
             <p>Thank you for visiting!</p>
@@ -405,6 +405,7 @@ async function sendDiagnosisEmail(email, userId, problem, systolic, diastolic, a
         const info = await transporter.sendMail(mailOptions);
         console.log('Email sent successfully to:', email); // Log success (optional)
         return true;
+        window.location.reload(); // Refresh the page after the user clicks "OK"
     } catch (error) {
         console.error('Email Send Error:', error); // Log the full error
         return false;
